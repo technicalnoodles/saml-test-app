@@ -52,7 +52,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'DEVWKS-2845',
+        title: 'DEVWKS-2122',
         logo: {
           alt: 'My Site Logo',
           src: 'img/logo.svg',
