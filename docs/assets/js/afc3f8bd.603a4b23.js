@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdevwks_2122_docs=self.webpackChunkdevwks_2122_docs||[]).push([[3276],{7372:s=>{s.exports=JSON.parse('{"label":"hello","permalink":"/DEVWKS-2122/blog/tags/hello","allTagsPath":"/DEVWKS-2122/blog/tags","count":2}')}}]);

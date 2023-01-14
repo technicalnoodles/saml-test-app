@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-docs": "cd ./DEVWKS-2122-DOCS && npm run build",
+    "build-client": "cd ./client && npm run build",
+    "build-app": "npm run build-docs && npm run build-client && cp -R ./DEVWKS-2122-DOCS/build/ ./docs"
   },
   "repository": {
     "type": "git",
