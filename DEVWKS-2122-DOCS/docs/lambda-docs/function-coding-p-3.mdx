@@ -1,0 +1,149 @@
+---
+sidebar_position: 6
+---
+
+# Function Code Part 3
+
+## The issue with using the API Gateway
+When using the API Gateway in front of a Lambda function, the API Gateway adds an additional layer of data that is sent to the Lambda function. Here is an example:
+```json showLineNumbers
+{
+  "resource": "/",
+  "path": "/",
+  "httpMethod": "GET",
+  "requestContext": {
+      "resourcePath": "/",
+      "httpMethod": "GET",
+      "path": "/Prod/",
+      ...
+  },
+  "headers": {
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+      "accept-encoding": "gzip, deflate, br",
+      "Host": "70ixmpl4fl.execute-api.us-east-2.amazonaws.com",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36",
+      "X-Amzn-Trace-Id": "Root=1-5e66d96f-7491f09xmpl79d18acf3d050",
+      ...
+  },
+  "multiValueHeaders": {
+      "accept": [
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+      ],
+      "accept-encoding": [
+          "gzip, deflate, br"
+      ],
+      ...
+  },
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": null,
+  "stageVariables": null,
+  //highlight-next-line
+  "body": null,
+  "isBase64Encoded": false
+}
+```
+
+The API Gateway encapsulates the original event and puts it into the `body` parameter of its body.  So we do not run into any issues parsing our data that comes from the API Gateway, we need to add these lines to the beginning of our Lambda function.
+```python title='lambda_function.py showLineNumbers
+import json
+import os
+def lambda_handler(event, context):
+  #add-line
+  event = event['body']
+  #add-line
+  event = json.loads(event)
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    payload = '{ "enabled": false }'
+    apiKey = os.environ['XCiscoMerakiAPIKey']
+    headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-Cisco-Meraki-API-Key": apiKey
+    }
+    response = requests.request('PUT', merakiUrl, headers=headers, data = payload)
+    if response.status_code == 200:
+      return {
+          'statusCode': 200,
+          'body': json.dumps('Port shutdown')
+        }
+    else:
+        return {
+          'statusCode': 200,
+          'body': json.dumps('Port not shutdown')
+        }
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+```
+
+The completed API Gateway compatible code is below:
+```python title='lambda_function.py showLineNumbers
+import json
+import os
+def lambda_handler(event, context):
+  event = event['body']
+  event = json.loads(event)
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    payload = '{ "enabled": false }'
+    apiKey = os.environ['XCiscoMerakiAPIKey']
+    headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-Cisco-Meraki-API-Key": apiKey
+    }
+    response = requests.request('PUT', merakiUrl, headers=headers, data = payload)
+    if response.status_code == 200:
+      return {
+          'statusCode': 200,
+          'body': json.dumps('Port shutdown')
+        }
+    else:
+        return {
+          'statusCode': 200,
+          'body': json.dumps('Port not shutdown')
+        }
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+```
+
+We have finished creating the function and can now package the code and upload it to AWS Lambda.

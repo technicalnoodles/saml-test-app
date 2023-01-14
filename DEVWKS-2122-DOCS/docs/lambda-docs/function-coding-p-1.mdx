@@ -1,0 +1,146 @@
+---
+sidebar_position: 4
+---
+
+# Function Code Part 1
+
+With the explanation of the `lambda_handler` code done, we can now start adding code to the handler to handle an event.
+
+For our example, we want to receive a `port disconnected` alert and then call out to the Meraki Dashbaord to shutdown the port.  We need to determine what data we need to find from the alert that the Meraki Dashbaord will use to shutdown the port. In the below JSON the highlighted lines will show what data we need:
+```json showLineNumbers
+{
+  "version": "0.1",
+  "sharedSecret": "",
+  "sentAt": "2023-01-13T19:57:07.307562Z",
+  "organizationId": "000000",
+  "organizationName": "EX net",
+  "organizationUrl": "https://n471.meraki.com/o/000000/manage/organization/overview",
+  "networkId": "N_00000000",
+  "networkName": "Ex net",
+  "networkUrl": "https://n471.meraki.com/ex_net/n/000000/manage/nodes/wired_status",
+  "networkTags": [],
+  //highlight-next-line
+  "deviceSerial": "Q00Y-U00R-T00G",
+  //highlight-next-line
+  "deviceMac": "00:00:00:d7:14:83",
+  //highlight-next-line
+  "deviceName": "Home MX",
+  "deviceUrl": "https://n471.meraki.com/ex_net/n/000000/manage/nodes/new_wired_status",
+  "deviceTags": [],
+  "deviceModel": "MX67W",
+  "alertId": "",
+  "alertType": "Switch port disconnected",
+  //highlight-next-line
+  "alertTypeId": "port_disconnected",
+  "alertLevel": "warning",
+  "occurredAt": "2023-01-13T19:57:07.259607Z",
+  "alertData": {
+    //highlight-next-line
+    "portNum": 3,
+    "description": "Switch port is down",
+    //highlight-next-line
+    "status": "down",
+    "prevStatus": "100 Gbps",
+    "portDesc": "Corp Access"
+  }
+}
+```
+
+Looking through the above JSON, we know we need the serial number, port number, and the status of the port.
+
+We always want to check if we get the alert we want and if the data we want is there as well. We want to check the alert type, if the metatdata exists, and the status of the port before we continue running the function. Otherwise the function should exit as quickly as possible. 
+If all the checks pass, we will import the python `requests` library to make the API call to Meraki later.
+
+We will add the highlighted lines to the ```lambda_handler```.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+
+def lambda_handler(event, context):
+  #remove-line
+    # TODO implement
+    #add-line
+    if event['alertTypeId'] != 'port_disconnected':
+#add-line
+    return {
+      #add-line
+      'statusCode': 200,
+      #add-line
+      'body': json.dumps('Not a downed port')
+      #add-line
+    }
+    #add-line
+  if 'alertData' not in event:
+    #add-line
+    return {
+      #add-line
+      'statusCode': 200,
+      #add-line
+      'body': json.dumps('Not a downed port')
+      #add-line
+    }
+    #add-line
+    if event['alertData']['status'] == 'down':
+      #add-line
+        import requests
+    #add-line
+    else:
+      #add-line
+      return {
+          #add-line
+          'statusCode': 200,
+          #add-line
+          'body': json.dumps('Not a downed port')
+          #add-line
+        }
+
+  #remove-line
+    return {
+          #remove-line
+            'statusCode': 200,
+          #remove-line
+            'body': json.dumps('Not a downed port')
+          #remove-line
+        }
+```
+
+Now that we know the port will be down and the `requests` library is imported, we now need to store the information we need to make the API call.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    #add-line
+    deviceSerial = str(event['deviceSerial'])
+    #add-line
+    deviceMac = event['deviceMac']
+    #add-line
+    deviceName = event['deviceName']
+    #add-line
+    portNumber = str(event['alertData']['portNum'])
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+      
+```
+
+
+
+
+
+

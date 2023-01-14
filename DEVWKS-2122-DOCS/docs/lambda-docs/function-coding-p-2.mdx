@@ -1,0 +1,277 @@
+---
+sidebar_position: 5
+---
+
+# Function Code Part 2
+
+So far we have setup our funciton to check if the port is down, import the `requests` library and store the information we need to make our API call.  Now we will setup our API call.
+
+We will add the Meraki API URL that will be used to make the call, create a payload to be sent, and create the headers of the request. 
+
+## API URL
+The Meraki URL will be modified to use the device serial number and port number to send the shutdown request.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    #this line has the base URL of https://api.meraki.com/api/v1/devices/ and then concatenates the device serial number and port number
+    #add-line
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+        
+```
+
+## API Payload
+Now let us create the pay load that will be sent.  All we are doing is making an object with `enabled: false` as the only value in it.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    #the payload we need to create will be an object that contains the 'enabled' boolean and it will be set to false
+    #add-line
+    payload = '{ "enabled": false }'
+    
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+        
+```
+## API headers
+The headers to be sent with the API request includes one called `X-Cisco-Meraki-API-Key`.  This header includes the API key that we obtained earlier in the workshop. To make sure the key is not exposed in our code, we will import it from the AWS Lambda environment variables. 
+
+To do this we need to import the `os` library and then import the key.
+
+### Enviroment variable import
+We will import the `os` library at the top of the python file and access the variable after the payload variable.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+#add-line
+import os
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    payload = '{ "enabled": false }'
+    #add-line
+    apiKey = os.environ['XCiscoMerakiAPIKey']
+    
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+```
+### Declare header variable
+We have stored the API key from the environment variable and now we can declare the headers. The header will be added after the `apiKey` variable.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+import os
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    payload = '{ "enabled": false }'
+    apiKey = os.environ['XCiscoMerakiAPIKey']
+    #add-line
+    headers = {
+      #add-line
+      "Content-Type": "application/json",
+      #add-line
+      "Accept": "application/json",
+      #add-line
+      "X-Cisco-Meraki-API-Key": "74005dcd80bec76f5dde1bfeee6d8ffa384cb27c"
+      #add-line
+    }
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+```
+We can now create the API call since we have all the data we need to make the call
+
+## Python Requests API call
+
+We will use the `requests` library to make the API call to Meraki and shutdown the port we received an alert for. After we send the request, we will check that it was successful and return a 200 status with a message the port was shutdown successfully.
+
+In this code block we will add the rest of the code we need, it will include the API call and the `if` statement checking for the success of the call.
+
+```python title='lambda_function.py showLineNumbers'
+import json
+import os
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    payload = '{ "enabled": false }'
+    apiKey = os.environ['XCiscoMerakiAPIKey']
+    headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-Cisco-Meraki-API-Key": apiKey
+    }
+    #add-line
+    response = requests.request('PUT', merakiUrl, headers=headers, data = payload)
+    #add-line
+    if response.status_code == 200:
+      #add-line
+      return {
+          #add-line
+          'statusCode': 200,
+          #add-line
+          'body': json.dumps('Port shutdown')
+          #add-line
+        }
+        #add-line
+    else:
+      #add-line
+        return {
+          #add-line
+          'statusCode': 200,
+          #add-line
+          'body': json.dumps('Port not shutdown')
+          #add-line
+        }
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+```
+The final code should look like the below:
+
+```python title='lambda_function.py showLineNumbers
+import json
+import os
+def lambda_handler(event, context):
+  if event['alertTypeId'] != 'port_disconnected':
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+    
+  if 'alertData' not in event:
+    return {
+      'statusCode': 200,
+      'body': json.dumps('Not a downed port')
+    }
+  if event['alertData']['status'] == 'down':
+    import requests
+    deviceSerial = str(event['deviceSerial'])
+    deviceMac = event['deviceMac']
+    deviceName = event['deviceName']
+    portNumber = str(event['alertData']['portNum'])
+    merakiUrl = "https://api.meraki.com/api/v1/devices/"+deviceSerial+"/switch/ports/"+portNumber
+    payload = '{ "enabled": false }'
+    apiKey = os.environ['XCiscoMerakiAPIKey']
+    headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-Cisco-Meraki-API-Key": apiKey
+    }
+    response = requests.request('PUT', merakiUrl, headers=headers, data = payload)
+    if response.status_code == 200:
+      return {
+          'statusCode': 200,
+          'body': json.dumps('Port shutdown')
+        }
+    else:
+        return {
+          'statusCode': 200,
+          'body': json.dumps('Port not shutdown')
+        }
+  else:
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Not a downed port')
+      }
+```
+If we wanted to package this code and upload it, it would work if there was nothing in front of the function. But since there will be an API gateway in front of the Lambda function, we need to add some additional logic to make sure we parse the input properly. 

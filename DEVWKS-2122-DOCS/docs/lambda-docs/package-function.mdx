@@ -1,0 +1,35 @@
+---
+sidebar_position: 7
+---
+
+# Upload the Lambda Function
+
+To upload our Lambda fucntion we first need to package our code into a zip file.  After we have packaged it properly, we may then upload the code.
+
+## Zip process
+
+To zip up files, we need to go into the CLI and change into the `package` directory.  Then we will create a zip file within it.  The commands are as follows:
+```
+cd package
+zip -r ../shutdownPort.zip .
+```
+
+After we have created this zip file we need to add our `lambda_function.py` file to the zip archive. This involves going up one directory and addign the file to the zip archive. The commands to do so are below:
+```
+cd ..
+zip shutdownPort.zip lambda_function.py
+```
+
+## Upload to Lambda
+
+Back on the AWS Lambda page. Underneath the **Function overview**, make sure the **Code** tab is selected.  Then look to the right and there should be an **Upload from** button.  Select this button and then select `.zip file`. It should look similar to this image:
+![Drop down selector](../../static/img/zip-file-dropper.png)
+
+After selecting the `.zip` option, it will bring up an `Upload` diaglog box.  Upload the `shutdownPort.zip` file using this diaglog box.
+
+It will take a few minutes to unpack the file, but once it finishes you should see your completed file in the code editor like the below image:
+![Uploaded code](../../static/img/uploaded-code.png)
+
+Now that the code is uploaded we need to deploy it. Click on the **Deploy** button and wait for it to finish.  We can no move onto creating the API Gateway.
+
+

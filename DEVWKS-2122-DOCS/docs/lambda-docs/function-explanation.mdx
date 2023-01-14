@@ -1,0 +1,92 @@
+---
+sidebar_position: 3
+---
+
+# Functions Explanation
+
+With Lambda functions, there is something called a handler.  This handler is the insertion point of the Lambda function.  
+By default the Lambda handler will use a file called `lambda_function.py` and require a function called `lambda_handler`. If this file does not exist or does no have that function, then the function will fail to run.
+:::note
+
+It is possbile to change the default `handler` in the Lambda function by editing the **Runtime settigns**.  This can be done by selecting the **Code** tab under the **Function Overview**.  Then scroll down to the **Runtime settings**.  Editing the `Handler` section in the **Runtime Settings** will allow you to change the default insertion point.
+
+:::
+
+```python title="lambda_function.py"
+import json
+
+def lambda_handler(event, context):
+    # TODO implement
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
+```
+## Lambda Function input variables
+Within the lambda_handler function that is defined above there are two variable that it receives as input.  The `event` variable and the `context` variable.  
+
+### Event variable
+The `event` variable is the data the Lambda function receives as a payload.  This could be a string that contains `'hello'`, a boolean of `false` or an object.  We can then use this event and parse the data in our lambda_handler function.
+
+Here is an example event that we received from the Meraki Dashbaord and we will use later for testing:
+```json
+{
+  "version": "0.1",
+  "sharedSecret": "",
+  "sentAt": "2023-01-13T19:57:07.307562Z",
+  "organizationId": "000000",
+  "organizationName": "EX net",
+  "organizationUrl": "https://n471.meraki.com/o/000000/manage/organization/overview",
+  "networkId": "N_00000000",
+  "networkName": "Ex net",
+  "networkUrl": "https://n471.meraki.com/ex_net/n/000000/manage/nodes/wired_status",
+  "networkTags": [],
+  "deviceSerial": "Q00Y-U00R-T00G",
+  "deviceMac": "00:00:00:d7:14:83",
+  "deviceName": "Home MX",
+  "deviceUrl": "https://n471.meraki.com/ex_net/n/000000/manage/nodes/new_wired_status",
+  "deviceTags": [],
+  "deviceModel": "MX67W",
+  "alertId": "",
+  "alertType": "Switch port disconnected",
+  "alertTypeId": "port_disconnected",
+  "alertLevel": "warning",
+  "occurredAt": "2023-01-13T19:57:07.259607Z",
+  "alertData": {
+    "portNum": 3,
+    "description": "Switch port is down",
+    "status": "down",
+    "prevStatus": "100 Gbps",
+    "portDesc": "Corp Access"
+  }
+}
+```
+
+### Context variable
+The `context` variable is a variable passed to the `lambda_handler` function that contains runtime information like the version of the function, memory limit, and a time limit for how long the funciton can run before being killed by AWS.
+
+For more information on the context variable you can check this [AWS guide](https://docs.aws.amazon.com/lambda/latest/dg/python-context.html).
+
+## Using libraries not provided by AWS
+
+There are three options to use a library that is not provided by AWS in a runtime environemnt.  
+* Create a `layer`
+* Containerize the code
+* Zip the code
+
+For our purposes and as the easiest option, we will zip our code to enable the use of external libraries.
+
+We have already done most of the setup to be able to do this.  First we need to make sure we are in the `shutdownPort` directory in the CLI.  Then we need to create a directory called `package`.  The directory structure should look like the below:
+```bash
+shutdownPort
+ | lambda_function.py
+ | package
+```
+
+We now need to install the python `requests` library so that we may make an API call to the Meraki Dashboard later on in the workshop. However, we need to install the library in the package directory and not globaly.  To do this, we need to run the below command in the `shutdownPort` directory:
+
+```pip install --target ./package requests```
+
+After having installed the requests library, we can now move onto coding the function to respond to a Meraki event.
+
+

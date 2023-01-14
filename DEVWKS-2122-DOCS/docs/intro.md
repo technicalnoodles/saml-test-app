@@ -2,46 +2,39 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
+This guide will take you through the steps it takes to create an AWS Lambda function, create an AWS API endpoint and code a simple function to respond to a webhook from the Meraki Dashboard. 
 
-Let's discover **Docusaurus in less than 5 minutes**.
 
 ## Getting Started
 
-Get started by **creating a new site**.
+The rest of this guide will now guide you through the workshop.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+The major steps for making a Lambda function that can receive webhooks are below:
+* AWS Login
+* Create a Lambda Function
+* Code the Lambda Function
+* Lambda Function Testing
+* Create an API Endpoint
+* Full Test with the Meraki webhook
 
-### What you'll need
+## AWS Login
 
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+Please sign in to AWS using your own credentials or the credentials provided.  Here is a link to **[AWS](https://aws.amazon.com/)**. Click on the **Sign In** button on the top right to sign in.
 
-## Generate a new site
+### Change the AWS Region
 
-Generate a new Docusaurus site using the **classic template**.
+After getting signed in, change the region you are in to the region specified on the login sheet unless you are using your own account.  To change the region, look to the top right of the page and to the left of where it has your username, there will be a city name.  Select it and then change the region to the one on the sheet. It should look similar to this image below:
 
-The classic template will automatically be added to your project after you run the command:
+![Region Change](../static/img/region-change.png)
 
-```bash
-npm init docusaurus@latest my-website classic
-```
+After the region has been changed, we can now work on our Lambda function without impacting anyone else.
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+### Open AWS Lambda Page
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+To open the AWS Lambda page, we need to search for **Lambda** in the search bar on the top left and select it. The search should look similar to this screenshot:
 
-## Start your site
+![Lambda Search](../static/img/lambda-search.png)
 
-Run the development server:
 
-```bash
-cd my-website
-npm run start
-```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.

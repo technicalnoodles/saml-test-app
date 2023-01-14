@@ -1,0 +1,54 @@
+---
+sidebar_position: 2
+---
+
+# Function Code Setup
+
+After the lambda function has been created it should take you to a page that is similar to the below image:
+![Created Function](../../static/img/created-function.png)
+
+For our code to work later on in this workshop, we need to create an environment variable from the Meraki API key we obtained earlier in this workshop.
+
+## Create environment variable
+To create our environment variable, we need to select the **Configuration** tab underneath **Function overview**.  Once there, there will be an **Environment variables** tab on the left side. It should look similar to this image:
+![Environment tab](../../static/img/env-tab.png)
+
+Select the **Environment variables** tab and then **Edit** it.  Click on **Add environment variable**. Name the `key` `XCiscoMerakiAPIKey`.  Then enter your Meraki API key as the `Value`. Then **Save** the configuration on the bottom right. It will look similar to this image except your `Value` will have somethign there:
+
+![Environment variable](../../static/img/edit-environ.png)
+
+Lets finish the local code setup now.
+## Local code setup
+
+There a few ways to code a Lambda function. The list below will list a few and the way we will be coding it will be bolded:
+* Lambda Code Source Editor
+* Containerized Deployment
+* **Zip archive deployment**
+
+:::caution
+
+The `Lambda Code Source Editor` has some limitations.  If you require additional libraries that are not provided by AWS, then using a `Containerized` or `Zip` deployment will allow use of those libraries.
+
+:::
+
+Since we will be using the `Zip` option for creating the Lambda code.  We will need to create a local folder that will contain our code.  On your computer please create a new folder named **shutdownPort** using your preferred method (CLI or GUI).
+
+Open this folder in Visual Studio Code.
+
+Back in the AWS Lambda function, copy the code from the **Code Source** editor. Here is an example of where it is:
+![Code Source Editor](../../static/img/code-source-editor.png)
+
+In the local code editor, create a new file called `lambda_handler.py` and paste the code from the Lambda function into it.
+
+There should now be a file with the below code in the `shutdownPort` folder.
+```python title="lambda_function.py showLineNumbers"
+import json
+
+def lambda_handler(event, context):
+    # TODO implement
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
+```
+
