@@ -4,7 +4,7 @@ const Header = () => {
     <div className="container">
         <div className="header-panels">
             <div className="header-panel">
-                <a className="header__logo" href="http://www.cisco.com" target="_blank">
+                <a className="header__logo" href="http://www.cisco.com">
                     <span className="icon-cisco"></span>
                 </a>
                 <div className="header__title">DEVWKS-2122</div>
@@ -17,16 +17,16 @@ const Header = () => {
                                 <div className="tab__heading">Active Events</div>
                             </a>
                                 </li>
-                        <li id="tabsheader-2" className="tab">
+                        {/* <li id="tabsheader-2" className="tab">
                             <a tabindex="0">
-                                <div className="tab__heading">Inactive Events</div>
+                                <div className="tab__heading">Resolved Events</div>
                             </a>
-                        </li>
+                        </li> */}
                     </ul>
                 </div>
             </div>
             <div className="header-panel header-panel--right">
-                <a className="header-item">
+                <a className="header-item" href='/login'>
                     <span className="half-margin-right">Log In</span>
                     <span className="icon-sign-in icon-size-20"></span>
                 </a>
