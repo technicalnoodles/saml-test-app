@@ -1,4 +1,4 @@
 module.exports({
-    ciscoClientId:'',
+    ciscoClientID:'',
     ciscoClientSecret:''
 })

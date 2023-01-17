@@ -25,7 +25,7 @@ Please open your CLI and run the below command to clone the DEVWKS-2122 reposito
 After it has been cloned, please change into the DEVWKS-2122 directory.
 `cd DEVWKS-2122`
 
-Run the command `npm setup dependencies` this command will install the dependencies needed to run the code. This could take a few minutes to finish.
+Run the command `npm run setup-dependencies` this command will install the dependencies needed to run the code. This could take a few minutes to finish.
 
 You should now be able to open this repository in Visual Studion Code using the `code .` command. If not, please open Visual Studio Code and open the folder from the file menu.
 
