@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose');
 require('./models/Event')
+const keys = require('./config/keys')
 
 const port = 5000
 
