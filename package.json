@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-docs": "cd ./DEVWKS-2122-DOCS && npm run build",
     "build-client": "cd ./client && npm run build",
-    "build-app": "npm run build-docs && npm run build-client && rm -Rf ./docs/ && cp -R ./DEVWKS-2122-DOCS/build/ ./docs"
+    "build-doc-app": "npm run build-docs && rm -Rf ./docs/ && cp -R ./DEVWKS-2122-DOCS/build/ ./docs",
+    "setup dependencies": "npm i && cd ./client && npm i && cd .."
   },
   "repository": {
     "type": "git",
