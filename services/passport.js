@@ -5,6 +5,16 @@ const keys = require('../config/keys');
 
 const User = mongoose.model('users');
 
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  User.findById(id).then((user) => {
+    done(null, user);
+  });
+});
+
 passport.use(
   new CiscoStrategy(
     {
@@ -20,9 +30,9 @@ passport.use(
           done(null, existingUser);
         } else {
           new User({
-            ciscoId: profile.userName,
-            name: profile.displayname,
-            departmentId: profile.department,
+            ciscoId: profile['_json']['userName'],
+            name: profile['displayname'],
+            departmentId: profile['_json']['department'],
           })
             .save()
             .then((user) => done(null, user));

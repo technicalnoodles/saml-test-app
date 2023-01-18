@@ -226,11 +226,11 @@ passport.use(
           //add-line
           new User({
             //add-line
-            ciscoId: profile.userName,
+            ciscoId: profile['_json']['userName'],
             //add-line
-            name: profile.displayname,
+            name: profile['displayname'],
             //add-line
-            departmentId: profile.department,
+            departmentId: profile['_json']['department'],
             //add-line
           })
             //add-line

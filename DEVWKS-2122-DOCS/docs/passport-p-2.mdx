@@ -4,12 +4,203 @@ sidebar_position: 6
 
 # Passport Part 2
 
-Mongo is the database this application uses to store data. It has events that we can create or remove and it will hold the user information we get back from WebEx.
+After being able to successfully create a user or find a user, we need to be able to set a cookie for that user so their session is persistent. To do this, we need be able to serialize the user, deserialize the user, and enable cookies.
 
-This workshop uses a library called `Mongoose` to handle connecting and doing database operations for us. We will not need to install this library as it is already installed and being used to store events.
+## Serializing a User
 
-In the `index.js`, we can see the few lines that mention Mongoose.
+To serialize a user, there is a function that Passport provides to us called `serializeUser`. It takes a callback function will two arguments: `user` and `done`. The user is the `user` we got back from mongoose. We will be adding this function right below the `User` model declaration.
+
+```javascript title=services/passport.js showLineNumbers
+const passport = require('passport');
+const CiscoStrategy = require('passport-cisco-spark').Strategy;
+const mongoose = require('mongoose');
+const keys = require('../config/keys');
+
+const User = mongoose.model('users');
+//add-line
+passport.serializeUser((user, done) => {
+  //add-line
+  done(null, user.id);
+  //add-line
+});
+```
+
+## Deserializing a User
+
+Deserializing is similar to serializing a user. The differnce being we need to first find the `user` from the database before we can deserialize them. the function is call`deserializeuser` and instead of taking a `user` object, it take an `id`. The `id` will be used to find the user with mongoose.
+
+```javascript title=services/passport.js showLineNumbers
+const passport = require('passport');
+const CiscoStrategy = require('passport-cisco-spark').Strategy;
+const mongoose = require('mongoose');
+const keys = require('../config/keys');
+
+const User = mongoose.model('users');
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+//add-line
+passport.deserializeUser((id, done) => {
+  //add-line
+  User.findById(id).then((user) => {
+    //add-line
+    done(null, user);
+    //add-line
+  });
+  //add-line
+});
+```
+
+## Creating a Session Cookie
+
+To create a cookie for our users. We need to tell Passport to use a cookie and to do this we need to install a library called `cookie-session`.
+
+### Install cookie-session
+
+In the CLI run the below command to install `cookie-session`.
+
+`npm install cookie-session`
+
+### Create a Cookie Encryption Key
+
+We need to update the `keys.js` file after it has finished installing. Open the `keys.js` file in the `config` directory. We need to add a new property to the object in this file called `cookieKey`. This object will be used as the encryption key for the cookie. This is an example of what the file should look after adding the `cookieKey` property.
+
+```javascript title=config/keys.js showLineNumbers
+module.exports({
+  ciscoClientID: 'asdfasdfasd',
+  ciscoClientSecret: 'sdfgasdfa',
+  //add-line
+  cookieKey: 'randomstring',
+});
+```
+
+### Update Passport to Use a Cookie
+
+Now we need to update the `index.js` file. This will include importing the `cookieKey`, importing the required libraries, telling the application to create a cookie, and configuring Passport to use the cookie.
+
+We first need to import `cookie-session`, `passport`, and the `keys` file.
 
 ```javascript title=index.js showLineNumbers
 const express = require('express');
+const mongoose = require('mongoose');
+//add-line
+const cookieSession = require('cookie-session');
+//add-line
+const passport = require('passport');
+//add-line
+const keys = require('./config/keys');
+require('./models/User');
+require('./services/passport');
+require('./models/Event');
+
+const port = 5000;
 ```
+
+Now we can congifure the application to use create a cookie. We will tell the `app` to use the `cookieSession` we imported. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
+
+```javascript title=index.js showLineNumbers
+const express = require('express');
+const mongoose = require('mongoose');
+const cookieSession = require('cookie-session');
+const passport = require('passport');
+const keys = require('./config/keys');
+require('./models/User');
+require('./services/passport');
+require('./models/Event');
+
+const port = 5000;
+
+main().catch((err) => console.log(err));
+
+async function main() {
+  await mongoose.connect('mongodb://localhost:27017');
+  // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
+}
+
+const app = express();
+app.use(express.json());
+//add-line
+app.use(
+  //add-line
+  cookieSession({
+    //add-line
+    maxAge: 2 * 24 * 60 * 60 * 1000,
+    //add-line
+    keys: [keys.cookieKey],
+    //add-line
+  })
+  //add-line
+);
+```
+
+Lastly we need to tell Passpport to use the cookie in a session. This is done with only two additional lines. The `initialize` function tells passport to use the `serialize` and `deserialize` functions we defined earlier. The `session` function tells passport to use sessions after an authentication flow completes.
+
+```javascript title=index.js showLineNumbers
+const express = require('express');
+const mongoose = require('mongoose');
+const cookieSession = require('cookie-session');
+const passport = require('passport');
+const keys = require('./config/keys');
+require('./models/User');
+require('./services/passport');
+require('./models/Event');
+
+const port = 5000;
+
+main().catch((err) => console.log(err));
+
+async function main() {
+  await mongoose.connect('mongodb://localhost:27017');
+  // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
+}
+
+const app = express();
+app.use(express.json());
+
+app.use(
+  cookieSession({
+    maxAge: 2 * 24 * 60 * 60 * 1000,
+    keys: [keys.cookieKey],
+  })
+);
+//add-line
+app.use(passport.initialize());
+//add-line
+app.use(passport.session());
+```
+
+### Testing
+
+We can try running the `index.js` file now. To do this run the below command:
+
+`node index.js`
+
+Then attempt to authenticate using the below URL:
+
+`localhost:5000/auth/cisco`
+
+It should ask for a login and permissions. After accepting them the server will crash. This is because as of May 2022, an update to Passport has broken compatibility with `cookie-session` beacuse it does not have the `regenerate` function or the `save` function. The owner of Passport recommends using an older version till a fix is out. To do this we need to uninstall passport and install the previous version The below commands will do jsut that:
+
+```bash
+npm uninstall passport
+npm install passport@0.5
+```
+
+After starting the server back up and running through the authentication again, we should see `Cannot GET /auth/cisco/callback`. This is expected but the authenication flow did finish successfully.
+
+## Logging Out
+
+Lastly we need to be able to log out because we cannot do that right now. We will add one more route handler in the `authRoutes.js` file.
+
+The route will be for `/api/logout` and it will tear down the session and invalidate the cookie.
+
+In the `authRoutes.js` file we will add the below code to do just that:
+
+```javascript title=routes/authRoutes.js showLineNumbers
+app.get('/api/logout', (req, res) => {
+  req.logout();
+  res.send('logged out');
+});
+```
+
+If you restart the server and try going to this route, you will get back a logged out message.
