@@ -4,48 +4,50 @@ sidebar_position: 4
 
 # Passport Part 1
 
-Passport is an authentication library that can be put into any javaScript applicaiton using `Express`.  The Passport webpage is [here](https://www.passportjs.org/).
+Passport is an authentication library that can be put into any javaScript applicaiton using `Express`. The Passport webpage is [here](https://www.passportjs.org/).
 
-If you look at the Passport webpage, you will notice they mention they use `Strategies`.  A strategy is their way of saying a process for authenticating to a service has been coded and made into a module for ease of use.
+If you look at the Passport webpage, you will notice they mention they use `Strategies`. A strategy is their way of saying a process for authenticating to a service has been coded and made into a module for ease of use.
 
-We will be using the `Cisco - Spark` [strategy](https://www.passportjs.org/packages/passport-cisco-spark/) in our application.  But you can use any of the other ones they have too.  Some examples are Facebook, Google, Github, LinkedIn, and the list can go on.  But they will all work in the same way the Cisco strategy does.
+We will be using the `Cisco - Spark` [strategy](https://www.passportjs.org/packages/passport-cisco-spark/) in our application. But you can use any of the other ones they have too. Some examples are Facebook, Google, Github, LinkedIn, and the list can go on. But they will all work in the same way the Cisco strategy does.
 
 ## Passport install
 
-To add Passport and the Cisco Spark strategy to our project, we first need to be in the `DEVWKS-2122` directory in the CLI.  Once here, run the following command:  
+To add Passport and the Cisco Spark strategy to our project, we first need to be in the `DEVWKS-2122` directory in the CLI. Once here, run the following command:  
 `npm install passport passport-cisco-spark`
 
 After this has completed, we can start getting our Passport configuration setup.
 
 ## Passport Configuration
 
-The first thing we need to do to make sure everything will work properly is to add our WebEx integration ID and Secret a files called `keys.js`.  This file is does not exist yet, but there is an example file called `exKey.js` located in the `config` directory.
-Copy the `Client ID` from the Webex Integration and paste it between the two single quotes next to `ciscoClientID`.  Do the same with the `Client Secret`, pasting it on the line with `ciscoClientSecret`.
+The first thing we need to do to make sure everything will work properly is to add our WebEx integration ID and Secret a files called `keys.js`. This file is does not exist yet, but there is an example file called `exKey.js` located in the `config` directory.
+Copy the `Client ID` from the Webex Integration and paste it between the two single quotes next to `ciscoClientID`. Do the same with the `Client Secret`, pasting it on the line with `ciscoClientSecret`.
 
 Now we need to rename the file to `keys.js`. This will allow us to make sure all of the next steps will work.
 
 ### Passport Service
-We will first create our Passport service.  The service is the configuration we need to be able to run this library and use the `cisco-spark` strategy.
 
-In the `services` directory, make a file called `passport.js` if it does not already exist.  
+We will first create our Passport service. The service is the configuration we need to be able to run this library and use the `cisco-spark` strategy.
+
+In the `services` directory, make a file called `passport.js` if it does not already exist.
 
 Open this file in the Visual Studio Code(VSCode) editor.
 
-To be able to use Passport we need to import it. Node does not use the newer `import` statements like you would see in React, so we need to use a require statement.  
+To be able to use Passport we need to import it. Node does not use the newer `import` statements like you would see in React, so we need to use a require statement.
 
 ```javascript title=services/passport.js showLineNumbers
-const passport = require('passport')
+const passport = require('passport');
 ```
 
 Next we need to import the `Cisco Spark` strategy.
 
 ```javascript title=services/passport.js showLineNumbers
-const passport = require('passport')
+const passport = require('passport');
 //add-line
 const CiscoStrategy = require('passport-cisco-spark').Strategy;
 ```
 
 The last things we need to import in this file are the keys from the WebEx integration. We are exporting them as an object from the `keys.js` file, making them easy to access.
+
 ```javascript title=services/passport.js showLineNumbers
 const passport = require('passport');
 const CiscoStrategy = require('passport-cisco-spark').Strategy;
@@ -54,76 +56,84 @@ const keys = require('../config/keys');
 ```
 
 Now that the imports are finished, we need to setup Passport to use the Strategy and to call back to our server after the authentication request has completed.
+
 ```javascript title=services/passport.js showLineNumbers
 const passport = require('passport');
 const CiscoStrategy = require('passport-cisco-spark').Strategy;
 const keys = require('../config/keys');
 //add-line
-passport.use(new CiscoStrategy(
+passport.use(
+  new CiscoStrategy(
     //add-line
     {
-        //add-line
-        clientID: keys.ciscoClientID,
-        //add-line
-        clientSecret:keys.ciscoClientSecret,
-        //add-line
-        callbackURL: '/auth/cisco/callback'
-        //add-line
-    }, 
+      //add-line
+      clientID: keys.ciscoClientID,
+      //add-line
+      clientSecret: keys.ciscoClientSecret,
+      //add-line
+      callbackURL: '/auth/cisco/callback',
+      //add-line
+    },
     //add-line
     (accessToken, refreshToken, profile, done) => {
-        //add-line
-        console.log(accessToken)
-        //add-line
-        console.log(profile)
-        //add-line
-        }
-        //add-line
-    )
+      //add-line
+      console.log(accessToken);
+      //add-line
+      console.log(profile);
+      //add-line
+    }
     //add-line
-)
+  )
+  //add-line
+);
 ```
-In the above code, we tell the imported Passport library to use a new `CiscoStrategy`. We give the `CiscoStrategy` one argument with a few different fields, `clientID`, `clientSecret`, and `callbackURL`.  The two client values are used by the server to make the call to our integration and the `callbackURL` URL is used by the integration so it knows who to send the data back to.  
+
+In the above code, we tell the imported Passport library to use a new `CiscoStrategy`. We give the `CiscoStrategy` one argument with a few different fields, `clientID`, `clientSecret`, and `callbackURL`. The two client values are used by the server to make the call to our integration and the `callbackURL` URL is used by the integration so it knows who to send the data back to.
 
 Our `callbackURL` is the same as the `Redirect URI` we created in the Webex Integration.  
-:::info 
-The `callbackURL` and the `Redirect URI` must match otherwise WebEx will not allow the flow to continue.  This is to prevent anyone from trying to take over the session.
+:::info
+The `callbackURL` and the `Redirect URI` must match otherwise WebEx will not allow the flow to continue. This is to prevent anyone from trying to take over the session.
 :::
 
 The second argument of the `CiscoStrategy` is a callback function. The callback function has four inputs, `accessToken`, `refreshToken`, `profile`, and `done`
-Once a successful authentication request occurs, this callback function is called and we can then store the information we want.  
+Once a successful authentication request occurs, this callback function is called and we can then store the information we want.
 
 Right now, we will just console this information to show what is returned from a successful request. After we have configured the MongoDb to accept users, we will come back and add some logic to check for users and store them.
 
 But before that, we will configure the authentication routing.
 
 ### Authentication Routes
+
 the authentication routes will be be used to send authentiation requests to different services and to receive these services responses.
 To create them, we need to make a new file in the `routes` directory called `authRoutes` if it does not already exist.
 
-After it has been created, let's open that file in VSCode.  We first need to import Passport like we did in the services file.
+After it has been created, let's open that file in VSCode. We first need to import Passport like we did in the services file.
 
 ```javascript title=routes/authRoutes.js showLineNumbers
 const passport = require('passport');
 ```
 
-Next we need to add our route handlers.  There will be two, one for `/auth/cisco` and `/auth/cisco/callback`.
+Next we need to add our route handlers. There will be two, one for `/auth/cisco` and `/auth/cisco/callback`.
+
 ```javascript title=routes/authRoutes.js showLineNumbers
 const passport = require('passport');
 //add-line
-    app.get('/auth/cisco', passport.authenticate('cisco-spark', {scope: ['spark:all']}))
-    //add-line
-    app.get('/auth/cisco/callback', passport.authenticate('cisco-spark'))
+app.get(
+  '/auth/cisco',
+  passport.authenticate('cisco-spark', { scope: ['spark:all'] })
+);
+//add-line
+app.get('/auth/cisco/callback', passport.authenticate('cisco-spark'));
 ```
 
-Looking at the top route.  We are expecting a `GET` request for `/auth/cisco`.  When we see this request we will forward the request to Passport to start the authentication flow. The first argument for the authentication request is what strategy it will use. This one will use the `cisco-spark` strategy.  
+Looking at the top route. We are expecting a `GET` request for `/auth/cisco`. When we see this request we will forward the request to Passport to start the authentication flow. The first argument for the authentication request is what strategy it will use. This one will use the `cisco-spark` strategy.
 
-The second argument is the `scope` of what data we want to get back from the authentication request. In this case, it is the same `scope` we defined in the Webex Integration.  This first request that is sent to WebEx will return a `code` like we saw in the OAuth flow, but no user data. The `code` is like a ticket.  
+The second argument is the `scope` of what data we want to get back from the authentication request. In this case, it is the same `scope` we defined in the Webex Integration. This first request that is sent to WebEx will return a `code` like we saw in the OAuth flow, but no user data. The `code` is like a ticket.
 
 We will exchange this ticket for the user data in the callback. Here is an example of what is returned as a URL:  
-```http://localhost:5000/auth/cisco/callback?code=YjJkNzdlOWItMTJkC00ZmI2LTg5NWUtMjZkYzFlNGVjZTY1Y2NhMTQ0YmMtYWY3_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f```
+`http://localhost:5000/auth/cisco/callback?code=YjJkNzdlOWItMTJkC00ZmI2LTg5NWUtMjZkYzFlNGVjZTY1Y2NhMTQ0YmMtYWY3_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f`
 
-The second route, is the route we are using as the callback for the integration. This callback route will make another call back to WebEx, but it will pass the `code` from the previous request as an argument.  Now that we have given the ticket back to WebEx, it will give us the user data we requested.
+The second route, is the route we are using as the callback for the integration. This callback route will make another call back to WebEx, but it will pass the `code` from the previous request as an argument. Now that we have given the ticket back to WebEx, it will give us the user data we requested.
 
 We have written our route handlers but if you haven't noticed, cannot run them because there is no `app` object in this file. To get around this and to keep a modular approach in this application. We need to wrap our route handlers in a function that is exported. Then the `index.js` will be able to pass the main `app` to the routes.
 To do this, we can create a new `module.exports` and then make it so it returns a function with `app` as an argument.
@@ -132,74 +142,80 @@ To do this, we can create a new `module.exports` and then make it so it returns 
 const passport = require('passport');
 //add-line
 module.exports = (app) => {
-    app.get('/auth/cisco', passport.authenticate('cisco-spark', {scope: ['spark:all']}))
-    app.get('/auth/cisco/callback', passport.authenticate('cisco-spark'))
-    //add-line
-}
+  app.get(
+    '/auth/cisco',
+    passport.authenticate('cisco-spark', { scope: ['spark:all'] })
+  );
+  app.get('/auth/cisco/callback', passport.authenticate('cisco-spark'));
+  //add-line
+};
 ```
 
-We have finished the authRoutes for the time being.  We will come back here after the MongoDb has been setup for our users.
+We have finished the authRoutes for the time being. We will come back here after the MongoDb has been setup for our users.
 
 The last step to amke sure our authentication flow works, is to import and call everything we need in the `index.js` file.
 
 ### Running the routes and service
 
-Open the `index.js` in VSCode.  The first thing we need to is to require the Passport service.  Normally, we would set some variable equal what we are importing. In this case we do not need to set it equal to a variable beacause we do not need to invoke anything.  We just need the service available for the routing. The import will look the below:
+Open the `index.js` in VSCode. The first thing we need to is to require the Passport service. Normally, we would set some variable equal what we are importing. In this case we do not need to set it equal to a variable beacause we do not need to invoke anything. We just need the service available for the routing. The import will look the below:
+
 ```javascript title=index.js showLineNumbers
-const express = require('express')
+const express = require('express');
 const mongoose = require('mongoose');
 //add-line
-require('./services/passport')
-require('./models/Event')
+require('./services/passport');
+require('./models/Event');
 
-const port = 5000
+const port = 5000;
 
-main().catch(err => console.log(err));
+main().catch((err) => console.log(err));
 
 async function main() {
   await mongoose.connect('mongodb://localhost:27017');
   // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
 }
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
 
-require('./routes/eventRoutes')(app)
+require('./routes/eventRoutes')(app);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 ```
 
 Our service has been added, now we need to import the `authRoutes` function we exported and pass the `app` to them for them to work properly.
+
 ```javascript title=index.js showLineNumbers
-const express = require('express')
+const express = require('express');
 const mongoose = require('mongoose');
-require('./services/passport')
-require('./models/Event')
+require('./services/passport');
+require('./models/Event');
 
-const port = 5000
+const port = 5000;
 
-main().catch(err => console.log(err));
+main().catch((err) => console.log(err));
 
 async function main() {
   await mongoose.connect('mongodb://localhost:27017');
   // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
 }
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
 //add-line
-require('./routes/authRoutes')(app)
+require('./routes/authRoutes')(app);
 
-require('./routes/eventRoutes')(app)
+require('./routes/eventRoutes')(app);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 ```
 
-To test that our flow works, we can run `index.js`.  Run the command `node index.js` and it will start the server.  In a browser, go to `localhost:5000/auth/cisco`.  It should take you to a login and ask for permission to give the app your info.  After this, it will hang and never load a new page.  Check the CLI and there should now be some json data.  This is the profile we logged out in the Passport service. I should look similar to what is below:
+To test that our flow works, we can run `index.js`. Run the command `node index.js` and it will start the server. In a browser, go to `localhost:5000/auth/cisco`. It should take you to a login and ask for permission to give the app your info. After this, it will hang and never load a new page. Check the CLI and there should now be some json data. This is the profile we logged out in the Passport service. I should look similar to what is below:
+
 ```json showLineNumber
 {
     provider: 'cisco-spark',
@@ -230,5 +246,4 @@ To test that our flow works, we can run `index.js`.  Run the command `node index
 }
 ```
 
-We have a working authentication flow and have finished the intial setup of Passport. We can now move on to adding the database.  
-
+We have a working authentication flow and have finished the intial setup of Passport. We can now move on to adding the database.

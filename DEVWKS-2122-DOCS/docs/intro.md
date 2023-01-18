@@ -3,17 +3,18 @@ sidebar_position: 1
 ---
 
 # Introduction
-This workshop will guide you through the process of adding Webex OAuth to a custom application.  This application is built with ReactJs, Node, Express, and MongoDb.  
 
-We live in an era where employees want to get thousands of data points in a way that they want view it. Whether that’s because the current tool can’t do what they want, they can’t aggregate their data from multiple sources, or the data just doesn’t exist at the moment. This causes employees to look for a solution outside of what the company can provide.  
+This workshop will guide you through the process of adding Webex OAuth to a custom application. This application is built with ReactJs, Node, Express, and MongoDb.
 
-They look to the bold new no-code application builders like Microsoft Power Apps and Glide.com or they create their own application and start querying the data from any source they need. They are then able to format it in any way they want to view it.  But these are no longer controlled by the company and many of them will have little to no security. If we leave them as is, the data they can retrieve can be accessed by anyone, not just the authorized users who need it. How do we add security to these home-grown applications the employees feel they need to do their job? 
+We live in an era where employees want to get thousands of data points in a way that they want view it. Whether that’s because the current tool can’t do what they want, they can’t aggregate their data from multiple sources, or the data just doesn’t exist at the moment. This causes employees to look for a solution outside of what the company can provide.
 
-We could audit the departments and take away those applications they painstakingly created, but then they may resent us and may even try to hide them in the future. The other option is to assist them with adding security to their application.  With this option, we allow the employee to continue using the application they worked hard to create by adding authentication and authorization.  This preventing open access of the data to anyone and keeps the company in compliance with data protection legislation. 
+They look to the bold new no-code application builders like Microsoft Power Apps and Glide.com or they create their own application and start querying the data from any source they need. They are then able to format it in any way they want to view it. But these are no longer controlled by the company and many of them will have little to no security. If we leave them as is, the data they can retrieve can be accessed by anyone, not just the authorized users who need it. How do we add security to these home-grown applications the employees feel they need to do their job?
+
+We could audit the departments and take away those applications they painstakingly created, but then they may resent us and may even try to hide them in the future. The other option is to assist them with adding security to their application. With this option, we allow the employee to continue using the application they worked hard to create by adding authentication and authorization. This preventing open access of the data to anyone and keeps the company in compliance with data protection legislation.
 
 At the end of the day we cannot stop employees from creating what they feel they need to complete their job, but we can certainly help them make it more secure.
 
-This is what we will be doing in the workshop today.  We will learn how to add authentication to an application using Webex OAuth and learn how it works, from the backend to the frontend.
+This is what we will be doing in the workshop today. We will learn how to add authentication to an application using Webex OAuth and learn how it works, from the backend to the frontend.
 
 ## Clone Repository
 
@@ -36,10 +37,20 @@ The `client` directory contains the ReactJs frontend.
 The `models` directory has the files used for interacting with the MongoDb.  
 The `routes` directory has all of the backend API routes the frontend will use and other services may use.  
 The `services` directory combines the routes and models to provide them as a "service".  
-Lastly is the file `index.js`. This file handles running all of the application code and serving the frontend once it has been built.  
+Lastly is the file `index.js`. This file handles running all of the application code and serving the frontend once it has been built.
 
 :::note
 The `DEVWKS-2122-DOCS` and `docs` directories can be ignored since they contain the built and unbuilt documentation you are reading
 :::
 
-Now that we are familiar with the file structure, we need to setup the Webex Integration that will be used for the authentication process.
+Now we need to run our MongoDb as a docker container.
+
+## MongoDb Docker Container
+
+To get a MongoDb up and running as quickly as possible, we can use Docker to pull a container image and then run the service locally. To do this, we can run the following command:
+
+`docker run --name mongodb -d -p 27017:27017 mongo`
+
+The above command will run a container called `mongodb` if it is already on the host system. If it cannot find one, then it will pull the image from the Docker repository. We are exposing the MongoDb ports as well so that we can connect to it without being in the container.
+
+Now that we are familiar with the file structure, and have the database running, we need to setup the Webex Integration that will be used for the authentication process.
