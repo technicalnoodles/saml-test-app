@@ -1,0 +1,123 @@
+---
+sidebar_position: 7
+---
+
+# Front-end Part 1
+
+We need to make our React frontend be able to detect when a user is logged in and then allow them to access the Events in our applicaiton.
+
+In this section we will be working with React, React Router, and Redux.
+
+React is a frontend libary used to create web UIs. React Router is a library that React can use to change pages in the application. Redux is a state library used to manage state and to pass state from one component to another without creating many dependencies.
+
+We will start working with Redux first. There is some boiler plate code that has been inserted into the `index.js` file to save on time.
+
+Please open the `client` directory to see the React code.
+
+## Redux Setup
+
+### Creating Actions
+
+Actions in Redux are what tell the library what to do. If there is an action of `FETCH_USER`, it will do what has been defined for that action. We will be creating an action called `FETCH_USER`. To do this, we need to create one directory and two files in that directory.
+
+In the `client -> src` directory, make a new directory called `actions`. After it has been created, please create the below files in it:  
+`types.js`  
+`index.js`
+
+In the `types.js` file, we need create a fetch user type. That will look like the below:
+
+```javascript title=actions/types.js showLineNumbers
+export const FETCH_USER = 'fetch_user';
+```
+
+This only defines a _type_ of action we can take in Redux.
+
+We will now create the action this type will take in the `index.js`.
+
+```javascript title=actions/index.js showLineNumbers
+import axios from 'axios';
+import { FETCH_USER } from './types';
+
+export const fetchUser = () => async (dispatch) => {
+  const user = await axios.get('/api/current_user');
+  dispatch({ type: FETCH_USER, payload: user['data'] });
+};
+```
+
+In the above file, we first need to import `axios`. This is a network request library. We will use this to access the current user information.
+
+The second line is the `type` of action we want. In this case it is `FETCH_USER`.
+
+The exported function then makes a call to the backend to see if there is a user logged in or not. Then the funciton `dispatches` the data with a type of `FETCH_USER` and payload of the data from the `axios` call.
+
+Dispatching in Redux means we are calling out to something called a _Reducer_ and updating the state of the application. The _Reducer_ needs to know the _type_ of call it is receiving so it can use the proper update technique and the payload it will use to set the state with. This state is not visible to the user unless we make it visible.
+
+We will now create a Reducer.
+
+### Creating a Reducer
+
+We need to create a directory and two files like we did for the actions. In the `client -> scr` directory, create a new direcotry called `reducers`. In this directory, please create the below two files:  
+`authReducer.js`  
+`index.js`
+
+In the `authReducer` file, we need to import the _type_ of _action_ we want to be able to use.
+
+```javascript title=reducers/authReducer.js showLineNumbers
+import { FETCH_USER } from '../actions/types';
+```
+
+Next we will define the function that will handle these actions.
+
+```javascript title=reducers/authReducer.js showLineNumbers
+import { FETCH_USER } from '../actions/types';
+//add-line
+export default function (state = null, action) {
+```
+
+For this function, we are passing two arguments to it. the first is the initial state of our application. In this case we are using `null`. The second is the `action`. This will be passed to the reducer when we actually use a `dispatch` funciton in the application. The body of the function will have a switch statement with the different types of state we can return based on the action type.
+
+```javascript title=reducers/authReducer.js showLineNumbers
+import { FETCH_USER } from '../actions/types';
+export default function (state = null, action) {
+  //add-line
+  switch (action.type) {
+    //add-line
+    case FETCH_USER:
+      //add-line
+      return action.payload || false;
+    //add-line
+    default:
+      //add-line
+      return state;
+    //add-line
+  }
+  //add-line
+}
+```
+
+The first case is if we detect `FETCH_USER`, if the payload of the action is not empty we return the payload to the state of our application. Otherwise, we return `false`.
+
+The `default` case will return the default state we set or whatever the current state is if an un-defined action is sent.
+
+The next thing we need to do is to combine our reducers so Redux is able to easily idenity and use them.
+
+In the `index.js` file, we will first import a function called `combineReducers`. This allows to server multiple reducers to redux from a single entry point. Then we will import our `authReducer`.
+
+```javascript title=reducers/index.js showLineNumbers
+import { combineReducers } from 'redux';
+import authReducer from './authReducer';
+```
+
+After the two imports, we need to export the `combineReducers` function with the `authReducer` set to `auth`. The reason for doing this is to give a simpler name to this state. We will now be able to access the `authReducer` state using the `auth` name instead. If we were to use a tool called `Redux DevTools`, we would be able to see a sate called `auth` in our application store.
+
+```javascript title=reducers/index.js showLineNumbers
+import { combineReducers } from 'redux';
+import authReducer from './authReducer';
+//add-line
+export default combineReducers({
+  //add-line
+  auth: authReducer,
+  //add-lline
+});
+```
+
