@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { store } from './app/store'
-import { Provider } from 'react-redux'
+import { Provider } from 'react-redux';
 import './styles/cui-standard.min.css';
-
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -14,4 +12,3 @@ root.render(
     </Provider>
   </React.StrictMode>
 );
-

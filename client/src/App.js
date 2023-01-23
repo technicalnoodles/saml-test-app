@@ -1,4 +1,5 @@
 import Header from "./components/Header";
+import { BrowserRouter, Route } from 'react-router-dom';
 import ActiveEvents from "./pages/ActiveEvents";
 
 function App() {
