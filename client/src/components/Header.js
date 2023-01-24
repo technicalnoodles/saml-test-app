@@ -43,7 +43,7 @@ const Header = () => {
             <div className="header-item">
               <ul id="tabsheader" className="tabs">
                 {loggedIn && (
-                  <li id="tabsheader-1" className={loggedIn && `tab active`}>
+                  <li id="tabsheader-1" className="tab active">
                     <Link to={'/events'}>
                       <div className="tab__heading">Active Events</div>
                     </Link>

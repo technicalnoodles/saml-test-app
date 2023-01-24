@@ -1,10 +1,10 @@
-import Header from './components/Header';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchUser } from './actions/index';
+import Header from './components/Header';
 import ActiveEvents from './pages/ActiveEvents';
 import Login from './pages/Login';
-import { useEffect } from 'react';
 
 function App() {
   const dispatch = useDispatch();
@@ -21,7 +21,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/events" element={<ActiveEvents />} />
-            {/* <ActiveEvents /> */}
           </Routes>
         </div>
       </BrowserRouter>

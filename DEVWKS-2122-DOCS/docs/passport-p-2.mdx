@@ -203,6 +203,10 @@ app.get('/api/logout', (req, res) => {
 });
 ```
 
+If you restart the server and try going to this route, you will get back a logged out message.
+
+Finally, we need to an API to check if there is a user logged in. This is what our frontend will use to check if it can say someone is logged in or not.
+
 ## Get Current User
 
 ```javascript
@@ -210,7 +214,5 @@ app.get('/api/current_user', (req, res) => {
   res.send(req.user);
 });
 ```
-
-If you restart the server and try going to this route, you will get back a logged out message.
 
 We have finished almost everything we need to make a functioning login. We will now move to the frontend and work in React to add a login page and logic to only allow a user that is logged in to see the event page.
