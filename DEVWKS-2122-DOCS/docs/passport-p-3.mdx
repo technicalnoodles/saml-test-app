@@ -4,6 +4,93 @@ sidebar_position: 8
 
 # Passport Part 3
 
+We need to update some redirects and make is so the backend requires the users to be logged in to access the events API. We will make a middleware that will be put in the event routes to prevent unauthorized deletion of an event.
+
+## Create a Middleware
+
+Create a new direcotry called `middlewares` in the root of the project. In this directory make a new file called `requirelogin.js`
+
+The file will have the below code in it:
+
+```javascript title=middlewares/requireLogin.js showLineNumbers
+module.exports = (req, res, next) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .send({ error: 'You must be logged in to perform this action.' });
+  }
+  next();
+};
+```
+
+This code checks if the request has a user attached and if it does not, we send back a 401 and a message.
+
+Now we can update the routes.
+
+## Event Routes
+
+We need import the `requireLogin` middlware we created in the `eventRoute` file and then add it to the arguments of our routes.
+
+It is shown in the below code:
+
+```javascript title=routes/eventRoutes.js showLineNumbers
+const mongoose = require('mongoose');
+const Event = mongoose.model('event');
+//add-line
+const requireLogin = require('../middlewares/requireLogin');
+
+module.exports = (app) => {
+    //remove-line
+    app.get('/api/event', async (req, res) => {
+    //add-line
+    app.get('/api/event', requireLogin ,async (req, res) => {
+    const events = await Event.find({});
+    if (events) {
+      console.log(events);
+      res.json(events);
+    }
+  });
+
+//remove-line
+  app.post('/api/event', async (req, res) => {
+//add-line
+  app.post('/api/event', requireLogin ,async (req, res) => {
+    const title = req.body.title;
+    console.log(title);
+    const response = await new Event({ title, active: true }).save();
+    if (response) {
+      res.send('event created');
+    } else {
+      res.send('not created');
+    }
+  });
+
+//remove-line
+  app.put('/api/event', async (req, res) => {
+//add-line
+  app.put('/api/event',requireLogin , async (req, res) => {
+    const { _id, status } = req.body;
+    if (status === 'resolve') {
+      const resolveEvent = await Event.findByIdAndUpdate(_id, {
+        active: 'false',
+      });
+      res.send(resolveEvent);
+    }
+  });
+
+//remove-line
+  app.delete('/api/event', async (req, res) => {
+//add-line
+  app.delete('/api/event', requireLogin ,async (req, res) => {
+    const id = req.body._id;
+    const removeEvent = await Event.deleteOne({ _id: id });
+    res.send(removeEvent);
+  });
+};
+```
+
+Now lets update the authentication routes.
+
 ## Auth Routes Update
 
 We need to edit the `authRoutes` file back in the `routes` directory of the main project.
@@ -37,3 +124,5 @@ module.exports = (app) => {
   });
 };
 ```
+
+With all of this done. We have finished the workshop.
