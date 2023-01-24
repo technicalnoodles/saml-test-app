@@ -47,10 +47,13 @@ Now we need to run our MongoDb as a docker container.
 
 ## MongoDb Docker Container
 
-To get a MongoDb up and running as quickly as possible, we can use Docker to pull a container image and then run the service locally. To do this, we can run the following command:
+To get a MongoDb up and running as quickly as possible, we can use Docker to pull a container image and then run the service locally. The Mongo container should already be on the workshop computer. Running the following command will run a container called `mongodb` if it is already on the host system. We are exposing the MongoDb ports as well so that we can connect to it without being in the container:
 
 `docker run --name mongodb -d -p 27017:27017 mongo`
 
-The above command will run a container called `mongodb` if it is already on the host system. If it cannot find one, then it will pull the image from the Docker repository. We are exposing the MongoDb ports as well so that we can connect to it without being in the container.
+If the `docker run` command does not work, we need to pull down the image using the below command:  
+`docker pull mongo`
+
+Then we may run the command from the previous step.
 
 Now that we are familiar with the file structure, and have the database running, we need to setup the Webex Integration that will be used for the authentication process.
