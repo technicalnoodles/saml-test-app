@@ -33,6 +33,16 @@ Lastly is the file `index.js`. This file handles running all the application cod
 The `DEVWKS-2122-DOCS` and `docs` directories can be ignored since they contain the built and unbuilt documentation you are reading
 :::
 
+Let's start the client and server using the below command:
+
+```
+npm run start
+```
+
+Run this command in the CLI in the root of our project.
+
+This command runs both the client and server, and both will live reload while we edit throughout the lab. This makes it easier for us to continue developing without needing to start and stop the server as we code.
+
 Now we need to run our MongoDb as a docker container.
 
 ## MongoDb Docker Container

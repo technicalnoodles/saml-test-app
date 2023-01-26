@@ -131,7 +131,7 @@ Looking at the top route. We are expecting a `GET` request for `/auth/cisco`. Wh
 The second argument is the `scope` of what data we want to get back from the authentication request. In this case, it is the same `scope` we defined in the Webex Integration. This first request that is sent to WebEx will return a `code` like we saw in the OAuth flow, but no user data. The `code` is like a ticket.
 
 We will exchange this ticket for the user data in the callback. Here is an example of what is returned as a URL:  
-`http://localhost:5000/auth/cisco/callback?code=YjJkNzdlOWItMTJkC00ZmI2LTg5NWUtMjZkYzFlNGVjZTY1Y2NhMTQ0YmMtYWY3_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f`
+`http://localhost:5000/auth/cisco/callback?code=YjJkNzdlOWItMTJ0000000000000000000000000000000000000_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f`
 
 The second route is the route we are using as the callback for the integration. This callback route will make another call back to WebEx, but it will pass the `code` from the previous request as an argument. Now that we have given the ticket back to WebEx, it will give us the user data we requested.
 
