@@ -5,10 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node index.js",
+    "client": "npm start --prefix client",
     "build-docs": "cd ./DEVWKS-2122-DOCS && npm run build",
     "build-client": "cd ./client && npm run build",
     "build-doc-app": "npm run build-docs && rm -Rf ./docs/ && cp -R ./DEVWKS-2122-DOCS/build/ ./docs",
-    "setup-dependencies": "npm i && cd ./client && npm i && cd .."
+    "setup-dependencies": "npm i && cd ./client && npm i && cd ..",
+    "start": "concurrently --raw \"npm run client\" \"npm run server \""
   },
   "repository": {
     "type": "git",
@@ -21,7 +24,9 @@
   },
   "homepage": "https://github.com/galica9999/DEVWKS-2122#readme",
   "dependencies": {
+    "concurrently": "^7.6.0",
     "express": "^4.18.2",
-    "mongoose": "^6.7.2"
+    "mongoose": "^6.7.2",
+    "nodemon": "^2.0.20"
   }
 }
