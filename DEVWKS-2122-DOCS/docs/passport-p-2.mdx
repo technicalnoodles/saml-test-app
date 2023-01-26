@@ -4,7 +4,7 @@ sidebar_position: 6
 
 # Passport Part 2
 
-After being able to successfully create a user or find a user, we need to be able to set a cookie for that user so their session is persistent. To do this, we need be able to serialize the user, deserialize the user, and enable cookies.
+After being able to successfully create a user or find a user, we need to be able to set a cookie for them, so their session is persistent. To do this, we need be able to serialize the user, deserialize the user, and enable cookies.
 
 ## Serializing a User
 
@@ -27,7 +27,7 @@ passport.serializeUser((user, done) => {
 
 ## Deserializing a User
 
-Deserializing is similar to serializing a user. The differnce being we need to first find the `user` from the database before we can deserialize them. the function is call`deserializeuser` and instead of taking a `user` object, it take an `id`. The `id` will be used to find the user with mongoose.
+Deserializing is like serializing a user. The difference being we need to first find the `user` from the database before we can deserialize them. the function is call `deserializeuser` and instead of taking a `user` object, it takes an `id`. The `id` will be used to find the user with mongoose.
 
 ```javascript title=services/passport.js showLineNumbers
 const passport = require('passport');
@@ -96,7 +96,7 @@ require('./models/Event');
 const port = 5000;
 ```
 
-Now we can congifure the application to use create a cookie. We will tell the `app` to use the `cookieSession` we imported. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
+Now we can configure the application to use create a cookie. We will tell the `app` to use the `cookieSession` we imported. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
 
 ```javascript title=index.js showLineNumbers
 const express = require('express');
@@ -133,7 +133,7 @@ app.use(
 );
 ```
 
-Lastly we need to tell Passpport to use the cookie in a session. This is done with only two additional lines. The `initialize` function tells passport to use the `serialize` and `deserialize` functions we defined earlier. The `session` function tells passport to use sessions after an authentication flow completes.
+Lastly we need to tell Passport to use the cookie in a session. This is done with only two additional lines. The `initialize` function tells passport to use the `serialize` and `deserialize` functions we defined earlier. The `session` function tells passport to use sessions after an authentication flow completes.
 
 ```javascript title=index.js showLineNumbers
 const express = require('express');
@@ -179,14 +179,14 @@ Then attempt to authenticate using the below URL:
 
 `localhost:5000/auth/cisco`
 
-It should ask for a login and permissions. After accepting them the server will crash. This is because as of May 2022, an update to Passport has broken compatibility with `cookie-session` beacuse it does not have the `regenerate` function or the `save` function. The owner of Passport recommends using an older version till a fix is out. To do this we need to uninstall passport and install the previous version The below commands will do jsut that:
+It should ask for a login and permissions. After accepting them the server will crash. This is because as of May 2022, an update to Passport has broken compatibility with `cookie-session` because it does not have the `regenerate` function or the `save` function. The owner of Passport recommends using an older version till a fix is out. To do this we need to uninstall passport and install the previous version The below commands will do just that:
 
 ```bash
 npm uninstall passport
 npm install passport@0.5
 ```
 
-After starting the server back up and running through the authentication again, we should see `Cannot GET /auth/cisco/callback`. This is expected but the authenication flow did finish successfully.
+After starting the server back up and running through the authentication again, we should see `Cannot GET /auth/cisco/callback`. This is expected but the authentication flow did finish successfully.
 
 ## Logging Out
 

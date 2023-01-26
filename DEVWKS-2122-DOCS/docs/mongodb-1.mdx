@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # MongoDb Part 1
 
-Mongo is the database this application uses to store data. It has events that we can create or remove and it will hold the user information we get back from WebEx.
+Mongo is the database this application uses to store data. It has events that we can create or remove, and it will hold the user information we get back from WebEx.
 
 This workshop uses a library called `Mongoose` to handle connecting and doing database operations for us. We will not need to install this library as it is already installed and being used to store events.
 
@@ -40,7 +40,7 @@ app.listen(port, () => {
 });
 ```
 
-At the top of the file we import Mongoose using a require statement. Alittle further down, we have an async function that waits for mongoose to connect the Mongo database. This line is prefilled with the Mongo URI that we will use to connect to the database.
+At the top of the file, we import Mongoose using a require statement. A little further down, we have an async function that waits for mongoose to connect the Mongo database. This line is prefilled with the Mongo URI that we will use to connect to the database.
 
 The rest of the Mongoose components we need to control data is in this line:
 
@@ -70,12 +70,12 @@ const eventSchema = new Schema({
 const event = mongoose.model('event', eventSchema);
 ```
 
-In the code of the `Event.js` file, we can see it imports `Schema` from Mongoose. A `Schema` is the blueprint for the `model`. The `Schema` for this model only has two properties: a string called `title` and a boolean called `active`. These are the default fields that are always required when you want to create a new event.  
+In the code of the `Event.js` file, we can see it imports `Schema` from Mongoose. A `Schema` is the blueprint for the `model`. The `Schema` for this model only has two properties: a string called `title` and a Boolean called `active`. These are the default fields that are always required when you want to create a new event.  
 :::note
 This does not mean we cannot add more data to an event though. We can add as many properties as we want, but those two must be included.  
 :::
 
-After the `Schema` has been created, we can create a `model` out of it. The `mongoose.model` fcuntion takes two arguments. The first argument is the name of the colleciton (in this case, `event`) and the second is the `schema` that was created (`eventSchema`). When the `mongoose.model` is called, it will create a new collection called `event` and the `Schema` is the interace to accessing the collection.  
+After the `Schema` has been created, we can create a `model` out of it. The `mongoose.model` function takes two arguments. The first argument is the name of the collection (in this case, `event`) and the second is the `schema` that was created (`eventSchema`). When the `mongoose.model` is called, it will create a new collection called `event` and the `Schema` is the interface to accessing the collection.  
 :::info
 If there is already a collection in the database called `event`, Mongoose will not recreate the `event` collection.
 :::
@@ -114,7 +114,7 @@ const userSchema = new Schema({
 });
 ```
 
-We now need to call `model` function to create a new callection called `users` and to create an interface with the `userSchema`.
+We now need to call `model` function to create a new collection called `users` and to create an interface with the `userSchema`.
 
 ```javascript title=models/User.js showLineNumbers
 const mongoose = require('mongoose');
@@ -133,7 +133,7 @@ Let's update the Passport service to use the model we created.
 
 ## Update Passport services
 
-We need to first import Mongoose and then set the `user` model to a variable. We will remove the the two console logs as well since we no longer need them.
+We need to first import Mongoose and then set the `user` model to a variable. We will remove the two console logs as well since we no longer need them.
 
 ```javascript title=services/passport.js showLineNumbers
 const passport = require('passport');
@@ -245,7 +245,7 @@ passport.use(
 );
 ```
 
-We have finished the logic needed to add a user to the database but we are not able to use this until we have imported the model into `index.js`
+We have finished the logic needed to add a user to the database, but we are not able to use this until we have imported the model into `index.js`
 
 ## Update index.js
 
@@ -283,4 +283,4 @@ app.listen(port, () => {
 Order of operations matter when it comes to requiring libraries and models. Since our Passport service needs to use the `User` model, we need to import the model after mongoose but before the passport service.
 :::
 
-We have finshed the MongoDb portion of the workshop. We will return to working with Passport now.
+We have finished the MongoDb portion of the workshop. We will return to working with Passport now.

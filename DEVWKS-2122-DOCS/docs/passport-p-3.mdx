@@ -4,11 +4,11 @@ sidebar_position: 8
 
 # Passport Part 3
 
-We need to update some redirects and make is so the backend requires the users to be logged in to access the events API. We will make a middleware that will be put in the event routes to prevent unauthorized deletion of an event.
+We need to update some redirects and make the backend require the users to be logged in to access the events API. We will make a middleware that will be put in the event routes to prevent unauthorized deletion of an event.
 
 ## Create a Middleware
 
-Create a new direcotry called `middlewares` in the root of the project. In this directory make a new file called `requirelogin.js`
+Create a new directory called `middlewares` in the root of the project. In this directory make a new file called `requirelogin.js`
 
 The file will have the below code in it:
 
@@ -89,7 +89,7 @@ module.exports = (app) => {
 };
 ```
 
-Now lets update the authentication routes.
+Now let’s update the authentication routes.
 
 ## Auth Routes Update
 
