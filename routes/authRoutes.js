@@ -9,7 +9,7 @@ module.exports = (app) => {
   app.get(
     '/auth/cisco/callback',
     passport.authenticate('cisco-spark'),
-    (req, res) => res.redirect('http://localhost:3001/events')
+    (req, res) => res.redirect('http://localhost:3000/events')
   );
 
   app.get('/api/logout', (req, res) => {
