@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "node index.js",
+    "server": "nodemon index.js",
     "client": "npm start --prefix client",
     "build-docs": "cd ./DEVWKS-2122-DOCS && npm run build",
     "build-client": "cd ./client && npm run build",
