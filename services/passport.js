@@ -24,7 +24,7 @@ passport.use(
     },
     (accessToken, refreshToken, profile, done) => {
       User.findOne({
-        ciscoId: profile.userName,
+        ciscoId: profile['_json']['userName'],
       }).then((existingUser) => {
         if (existingUser) {
           done(null, existingUser);
