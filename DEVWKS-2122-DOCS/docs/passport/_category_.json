@@ -1,0 +1,8 @@
+{
+  "label": "Passport Configurations",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "We will be creating everything related to passport here"
+  }
+}

@@ -2,54 +2,7 @@
 sidebar_position: 6
 ---
 
-# Passport Part 2
-
-After being able to successfully create a user or find a user, we need to be able to set a cookie for them, so their session is persistent. To do this, we need be able to serialize the user, deserialize the user, and enable cookies.
-
-## Serializing a User
-
-To serialize a user, there is a function that Passport provides to us called `serializeUser`. It takes a callback function will two arguments: `user` and `done`. The user is the `user` we got back from mongoose. We will be adding this function right below the `User` model declaration.
-
-```javascript title=services/passport.js showLineNumbers
-const passport = require('passport');
-const CiscoStrategy = require('passport-cisco-spark').Strategy;
-const mongoose = require('mongoose');
-const keys = require('../config/keys');
-
-const User = mongoose.model('users');
-//add-line
-passport.serializeUser((user, done) => {
-  //add-line
-  done(null, user.id);
-  //add-line
-});
-```
-
-## Deserializing a User
-
-Deserializing is like serializing a user. The difference being we need to first find the `user` from the database before we can deserialize them. the function is call `deserializeuser` and instead of taking a `user` object, it takes an `id`. The `id` will be used to find the user with mongoose.
-
-```javascript title=services/passport.js showLineNumbers
-const passport = require('passport');
-const CiscoStrategy = require('passport-cisco-spark').Strategy;
-const mongoose = require('mongoose');
-const keys = require('../config/keys');
-
-const User = mongoose.model('users');
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-//add-line
-passport.deserializeUser((id, done) => {
-  //add-line
-  User.findById(id).then((user) => {
-    //add-line
-    done(null, user);
-    //add-line
-  });
-  //add-line
-});
-```
+# Creating Cookies
 
 ## Creating a Session Cookie
 
@@ -179,40 +132,4 @@ Then attempt to authenticate using the below URL:
 
 `localhost:5000/auth/cisco`
 
-It should ask for a login and permissions. After accepting them the server will crash. This is because as of May 2022, an update to Passport has broken compatibility with `cookie-session` because it does not have the `regenerate` function or the `save` function. The owner of Passport recommends using an older version till a fix is out. To do this we need to uninstall passport and install the previous version The below commands will do just that:
-
-```bash
-npm uninstall passport
-npm install passport@0.5
-```
-
-After starting the server back up and running through the authentication again, we should see `Cannot GET /auth/cisco/callback`. This is expected but the authentication flow did finish successfully.
-
-## Logging Out
-
-Lastly we need to be able to log out because we cannot do that right now. We will add one more route handler in the `authRoutes.js` file.
-
-The route will be for `/api/logout` and it will tear down the session and invalidate the cookie.
-
-In the `authRoutes.js` file we will add the below code to do just that:
-
-```javascript title=routes/authRoutes.js showLineNumbers
-app.get('/api/logout', (req, res) => {
-  req.logout();
-  res.send('logged out');
-});
-```
-
-If you restart the server and try going to this route, you will get back a logged out message.
-
-Finally, we need to an API to check if there is a user logged in. This is what our frontend will use to check if it can say someone is logged in or not.
-
-## Get Current User
-
-```javascript
-app.get('/api/current_user', (req, res) => {
-  res.send(req.user);
-});
-```
-
-We have finished almost everything we need to make a functioning login. We will now move to the frontend and work in React to add a login page and logic to only allow a user that is logged in to see the event page.
+It should ask for a login and permissions.

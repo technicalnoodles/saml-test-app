@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 ---
 
 # MongoDb Part 1
@@ -16,6 +16,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 require('./services/passport');
 require('./models/Event');
+references;
 
 const port = 5000;
 
@@ -80,207 +81,28 @@ After the `Schema` has been created, we can create a `model` out of it. The `mon
 If there is already a collection in the database called `event`, Mongoose will not recreate the `event` collection.
 :::
 
-<!-- Lastly we export this model as an event. In this case, we export `event` as `event`. This `model` can now be used in other places within the application and will take care of all the database operations related to this model. -->
-
 We have looked at some examples of what we will be doing, but now we need to create a `user` model.
 
 ## Creating a User model
 
 In the `models` directory, we need to create a new file called `User.js`
 
-After it is created, open the `User.js` file in the code editor. We need to do our initial imports like in the `Event` model:
+After it is created, open the `User.js` file in the code editor. We need to do our initial imports like in the `Event` model.
 
 ```javascript title=models/User.js showLineNumbers
-//add-line
 const mongoose = require('mongoose');
-//add-line
 const { Schema } = mongoose;
+const userSchema = new Schema({
+  ciscoId: String,
+  name: String,
+  departmentId: String,
+});
+
+mongoose.model('users', userSchema);
 ```
 
 After importing Mongoose and pulling out the `Schema` function, we can create our `userSchema`. The `userSchema` will contain three properties: `ciscoId`, `name`, and `departmentId`. These will all be values we store after the authentication flow has finished.
 
-```javascript title=models/User.js showLineNumbers
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
-//add-line
-const userSchema = new Schema({
-  //add-line
-  ciscoId: String,
-  //add-line
-  name: String,
-  //add-line
-  departmentId: String,
-  //add-line
-});
-```
-
 We now need to call `model` function to create a new collection called `users` and to create an interface with the `userSchema`.
-
-```javascript title=models/User.js showLineNumbers
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
-const userSchema = new Schema({
-  ciscoId: String,
-  name: String,
-  departmentId: String,
-});
-
-//add-line
-mongoose.model('users', userSchema);
-```
-
-Let's update the Passport service to use the model we created.
-
-## Update Passport services
-
-We need to first import Mongoose and then set the `user` model to a variable. We will remove the two console logs as well since we no longer need them.
-
-```javascript title=services/passport.js showLineNumbers
-const passport = require('passport');
-const CiscoStrategy = require('passport-cisco-spark').Strategy;
-//add-line
-const mongoose = require('mongoose');
-const keys = require('../config/keys');
-//add-line
-const User = mongoose.model('users');
-
-passport.use(
-  new CiscoStrategy(
-    {
-      clientID: keys.ciscoClientID,
-      clientSecret: keys.ciscoClientSecret,
-      callbackURL: '/auth/cisco/callback',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      //remove-line
-      console.log(accessToken);
-      //remove-line
-      console.log(profile);
-    }
-  )
-);
-```
-
-Next we need to add some logic to `CiscoStrategy` callback function. In this callback function we will use the `User` model to check if the user logging in already exists using `.findOne`. If they do exist, it will tell the flow to continue using the `done` function that is provided.
-
-In a `done` function, to say the flow has happened as expected and to continue, we need to pass it an argument of `null` and a second argument of the user that was found.
-
-```javascript title=services/passport.js showLineNumbers
-const passport = require('passport');
-const CiscoStrategy = require('passport-cisco-spark').Strategy;
-const mongoose = require('mongoose');
-const keys = require('../config/keys');
-const User = mongoose.model('users');
-
-passport.use(
-  new CiscoStrategy(
-    {
-      clientID: keys.ciscoClientID,
-      clientSecret: keys.ciscoClientSecret,
-      callbackURL: '/auth/cisco/callback',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      //add-line
-      User.findOne({
-        //add-line
-        ciscoId: profile.userName,
-        //add-line
-      }).then((existingUser) => {
-        //add-line
-        if (existingUser) {
-          //add-line
-          done(null, existingUser);
-          //add-line
-        }
-        //add-line
-      });
-    }
-  )
-);
-```
-
-If this user does not exist, an `else` statement will be used to `save` the new user into the database using the three properties we specified in the model. We then need to tell Passport the flow went as expected using the `done` function; passing the `null` property and the new `user`.
-
-```javascript title=services/passport.js showLineNumbers
-const passport = require('passport');
-const CiscoStrategy = require('passport-cisco-spark').Strategy;
-const mongoose = require('mongoose');
-const keys = require('../config/keys');
-const User = mongoose.model('users');
-
-passport.use(
-  new CiscoStrategy(
-    {
-      clientID: keys.ciscoClientID,
-      clientSecret: keys.ciscoClientSecret,
-      callbackURL: '/auth/cisco/callback',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      User.findOne({
-        ciscoId: profile.userName,
-      }).then((existingUser) => {
-        if (existingUser) {
-          done(null, existingUser);
-          //add-line
-        } else {
-          //add-line
-          new User({
-            //add-line
-            ciscoId: profile['_json']['userName'],
-            //add-line
-            name: profile['displayname'],
-            //add-line
-            departmentId: profile['_json']['department'],
-            //add-line
-          })
-            //add-line
-            .save()
-            //add-line
-            .then((user) => done(null, user));
-          //add-line
-        }
-      });
-    }
-  )
-);
-```
-
-We have finished the logic needed to add a user to the database, but we are not able to use this until we have imported the model into `index.js`
-
-## Update index.js
-
-We need to add one line to our `index.js` file. That line is importing the `user` model. The entire application can now use it after being imported.
-
-```javascript title=index.js showLineNumbers
-const express = require('express');
-const mongoose = require('mongoose');
-//add-line
-require('./models/User');
-require('./services/passport');
-require('./models/Event');
-
-const port = 5000;
-
-main().catch((err) => console.log(err));
-
-async function main() {
-  await mongoose.connect('mongodb://localhost:27017');
-  // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
-}
-
-const app = express();
-app.use(express.json());
-require('./routes/authRoutes')(app);
-
-require('./routes/eventRoutes')(app);
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-```
-
-:::danger
-Order of operations matter when it comes to requiring libraries and models. Since our Passport service needs to use the `User` model, we need to import the model after mongoose but before the passport service.
-:::
 
 We have finished the MongoDb portion of the workshop. We will return to working with Passport now.

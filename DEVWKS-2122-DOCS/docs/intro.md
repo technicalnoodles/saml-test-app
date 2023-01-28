@@ -43,7 +43,7 @@ Run this command in the CLI in the root of our project.
 
 This command runs both the client and server, and both will live reload while we edit throughout the lab. This makes it easier for us to continue developing without needing to start and stop the server as we code.
 
-Now we need to run our MongoDb as a docker container.
+Now we need to get a MongoDb running as a docker container. We are using MongoDb to store our user data and the events in this lab.
 
 ## MongoDb Docker Container
 
