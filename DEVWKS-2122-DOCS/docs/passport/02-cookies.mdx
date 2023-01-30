@@ -1,29 +1,16 @@
 ---
-sidebar_position: 6
+sidebar_position: 2
 ---
 
-# Creating Cookies
+# Creating Cookies and Testing
 
 ## Creating a Session Cookie
 
 To create a cookie for our users. We need to tell Passport to use a cookie and to do this we need the library called `cookie-session`.
 
-### Create a Cookie Encryption Key
-
-We need to update the `keys.js` file after it has finished installing. Open the `keys.js` file in the `config` directory. We need to add a new property to the object in this file called `cookieKey`. This object will be used as the encryption key for the cookie. This is an example of what the file should look after adding the `cookieKey` property.
-
-```javascript title=config/keys.js showLineNumbers
-module.exports({
-  ciscoClientID: 'asdfasdfasd',
-  ciscoClientSecret: 'sdfgasdfa',
-  //add-line
-  cookieKey: 'randomstring',
-});
-```
-
 ### Update Passport to Use a Cookie
 
-Open the `index.js` in VSCode.
+Open the `index.js` from the root directory in VSCode. The below code should be pasted into that file:
 
 ```javascript title=index.js showLineNumbers
 const express = require('express');
@@ -80,13 +67,15 @@ app.listen(port, () => {
 });
 ```
 
-In the code above we we import and tell the `app` to use the `cookieSession` library. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
+In the code above we import the Passport service, User model, cookieSession library, and Passport. We then tell the `app` to use the `cookieSession` library. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
 
-Lastly we need to tell Passport to use the cookie in a session. This is done with only two additional lines. The `initialize` function tells passport to use the `serialize` and `deserialize` functions we defined earlier. The `session` function tells passport to use sessions after an authentication flow completes.
+Then we need to tell Passport to use the cookie in a session. This is done with only two additional lines. The `initialize` function tells passport to use the `serialize` and `deserialize` functions we defined earlier. The `session` function tells passport to use sessions after an authentication flow completes.
 
 ### Testing
 
-To test that our flow works, we can run `index.js`. Run the command `node index.js` and it will start the server. In a browser, go to `localhost:5000/auth/cisco`. It should take you to a login and ask for permission to give the app your info. After this, it will hang and never load a new page. Check the CLI and there should now be some json data. This is the profile we logged out in the Passport service. It should look like what is below:
+To test that our flow works; in a browser, go to `localhost:5000/auth/cisco`. It should take you to a login and ask for permission to give the app your info. After this, it will redirect to `/event` on the frontend.
+
+If you check the CLI there should be some json data. This is the profile we logged out in the Passport service and is the raw user data before we parsed through it to store only some parts of it. It should look like what is below:
 
 ```json showLineNumber
 {
@@ -118,12 +107,10 @@ To test that our flow works, we can run `index.js`. Run the command `node index.
 }
 ```
 
-We can try running the `index.js` file now. To do this run the below command:
+You may have noticed that the top right of the frontend still says **login**. Were we actualy authenticated or not? We can check that by going to the `current_user` route we created. This will only show data is there is a user logged in. Go to `localhost:5000/api/current_user`. It should return the data for our user.
 
-`node index.js`
+Now lets logout and test this again. Go to `localhost:5000/api/logout`, then back to `localhost:5000/api/current_user`.
 
-Then attempt to authenticate using the below URL:
+The logout should return you the frontend and it will still say login. But checking the `localhost:5000/api/current_user` route will return a blank screen. Now we know that our authentication flow works and we are able to successfully create and teardown a session.
 
-`localhost:5000/auth/cisco`
-
-It should ask for a login and permissions.
+In the next section we will create a middleware that will intercept requests and check if a user is logged in.

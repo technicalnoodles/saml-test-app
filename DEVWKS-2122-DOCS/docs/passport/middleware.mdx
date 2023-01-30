@@ -1,0 +1,176 @@
+---
+sidebar_position: 3
+---
+
+# Creating Middleware
+
+We need to update some redirects and make the backend require the users to be logged in to access the events API. We will make a middleware that will be put in the event routes to prevent unauthorized access to the event API.
+
+## Testing Unauthorized API Calls
+
+In the web browser, go to `localhost:5000/api/event`. It should return all of the entries in our database.
+
+Since we logged out in the previous section we can see that this is not a good idea. We need to add a check on the event routes to see if someone is logged in.
+
+## Create the requireLogin Middleware
+
+Create a new directory called `middlewares` in the root of the project. In this directory make a new file called `requirelogin.js`
+
+The file will have the below code in it:
+
+```javascript title=middlewares/requireLogin.js showLineNumbers
+module.exports = (req, res, next) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .send({ error: 'You must be logged in to perform this action.' });
+  }
+  next();
+};
+```
+
+This code checks if the request has a user attached and if it does not, we send back a 401 and a message.
+
+Now we can update the routes.
+
+## Event Routes
+
+We need import the `requireLogin` middlware we created in the `eventRoute.js` file and then add it to the arguments of our routes.
+
+It is shown in the below code:
+
+```javascript title=routes/eventRoutes.js showLineNumbers
+const mongoose = require('mongoose');
+const Event = mongoose.model('event');
+//add-line
+const requireLogin = require('../middlewares/requireLogin');
+
+module.exports = (app) => {
+  //add-line
+  app.get('/api/event', requireLogin, async (req, res) => {
+    const events = await Event.find({});
+    if (events) {
+      console.log(events);
+      res.json(events);
+    }
+  });
+
+  //add-line
+  app.post('/api/event', requireLogin, async (req, res) => {
+    const title = req.body.title;
+    console.log(title);
+    const response = await new Event({ title, active: true }).save();
+    if (response) {
+      res.send('event created');
+    } else {
+      res.send('not created');
+    }
+  });
+
+  //add-line
+  app.put('/api/event', requireLogin, async (req, res) => {
+    const { _id, status } = req.body;
+    if (status === 'resolve') {
+      const resolveEvent = await Event.findByIdAndUpdate(_id, {
+        active: 'false',
+      });
+      res.send(resolveEvent);
+    }
+  });
+
+  //add-line
+  app.delete('/api/event', requireLogin, async (req, res) => {
+    const id = req.body._id;
+    const removeEvent = await Event.deleteOne({ _id: id });
+    res.send(removeEvent);
+  });
+};
+```
+
+Lets test if this prevents an unauthenticated user from accessing the events.
+
+## Testing For a User
+
+### Unauthenticated User
+
+Go back to the `localhost:5000/api/event` route in the browser. We should receive a _You must be logged in to perform this action._ message now.
+
+This proves we have stopped unauthenticated users from accessing events. Lets login and make sure we can get them as an authenticated user.
+
+### Authenticated User
+
+Open the frontend on `localhost:3000/`. We should see no events in the dashboard. Now login to the application using `localhost:3000/auth/cisco`. After going through the flow, it should return you the frontend with the events bein shown. We can also check `localhost:5000/api/event`. We should see the same database entries we saw before adding the middleware.
+
+However this is not enough, we need to make sure only specific users can access these routes.
+
+Lets create an _authorized users_ list to check if the user is authorized to access the event routes.
+
+### Adding an Authorized User check
+
+We will create one more middle to make this possible. In the `middlewares` directory create a new file called `authorizedUser.js`. Then paste the below code into it:
+
+```javascript title='middlewares/authorizedUser.js' showLineNumbers
+module.exports = (req, res, next) => {
+  const authorizedUsers = ['jameson@cisco.com'];
+  if (!authorizedUsers.includes(req.user.ciscoId)) {
+    return res
+      .status(401)
+      .send({ error: 'You are not authorized to access this resource.' });
+  }
+  next();
+};
+```
+
+We have a list of authorized users at the top of the file and then our if statement checks if the the currently logged in user is in that list. If not, they are not allowed access.
+
+Lets add this to the event routes.
+
+Replace what is in the `routes/eventRotues.js` with the below:
+
+```javascript title='routes/eventRoutes.js' showLineNumbers
+const mongoose = require('mongoose');
+const Event = mongoose.model('event');
+const requireLogin = require('../middlewares/requireLogin');
+const authorizedUser = require('../middlewares/authorizedUser');
+
+module.exports = (app) => {
+  app.get('/api/event', requireLogin, authorizedUser, async (req, res) => {
+    const events = await Event.find({});
+    if (events) {
+      console.log(events);
+      res.json(events);
+    }
+  });
+
+  app.post('/api/event', requireLogin, authorizedUser, async (req, res) => {
+    const title = req.body.title;
+    console.log(title);
+    const response = await new Event({ title, active: true }).save();
+    if (response) {
+      res.send('event created');
+    } else {
+      res.send('not created');
+    }
+  });
+
+  app.put('/api/event', requireLogin, authorizedUser, async (req, res) => {
+    const { _id, status } = req.body;
+    if (status === 'resolve') {
+      const resolveEvent = await Event.findByIdAndUpdate(_id, {
+        active: 'false',
+      });
+      res.send(resolveEvent);
+    }
+  });
+
+  app.delete('/api/event', requireLogin, authorizedUser, async (req, res) => {
+    const id = req.body._id;
+    const removeEvent = await Event.deleteOne({ _id: id });
+    res.send(removeEvent);
+  });
+};
+```
+
+Lets test this. Go back to `localhost:3000/events` and refresh the page. We should now see no events. We have successfully made it so that an unauthorized user cannot access the events.
+
+In the `authorizedUser.js` file, please add your own username into the list for the rest of the workshop.
