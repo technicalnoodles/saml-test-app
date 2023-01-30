@@ -49,7 +49,7 @@ The rest of the Mongoose components we need to control data is in this line:
 require('./routes/eventRoutes')(app);
 ```
 
-In the `routes.eventRoutes.js` file, there is one line at the top that we want to look at.
+In the `routes/eventRoutes.js` file, there is one line at the top that we want to look at.
 
 ```javascript
 const Event = mongoose.model('event');
@@ -105,4 +105,4 @@ After importing Mongoose and pulling out the `Schema` function, we can create ou
 
 We now need to call `model` function to create a new collection called `users` and to create an interface with the `userSchema`.
 
-We have finished the MongoDb portion of the workshop. We will return to working with Passport now.
+We have finished the MongoDb portion of the workshop. We will now start working with Passport and WebEx OAuth.

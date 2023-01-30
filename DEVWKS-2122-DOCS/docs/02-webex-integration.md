@@ -43,4 +43,21 @@ Click on **Add Integration** at the very bottom of the page. Your integration sh
 
 ![redirect URI](../static/img/congratulations.png)
 
-We will use the ID and Secret later in this workshop. We can generate a new secret later, so we will move onto to explaining the OAuth flow and how our application will be able to use with PassportJs.
+We need to store the WebEx integration ID and Secret in a file called `keys.js`. This file is does not exist yet, but there is an example file called `exKey.js` located in the `config` directory.
+Copy the `Client ID` from the Webex Integration and paste it between the two single quotes next to `ciscoClientID`. Do the same with the `Client Secret`, pasting it on the line with `ciscoClientSecret`. We need to add some random text to the `cookieKey` field as well. This can be anything you want to type in. The `cookieKey` will be used to encrypt our session cookie later on in this workshop.
+
+Now we need to rename the file to `keys.js`.
+
+```javascript title='/config/keys.js' showLineNumbers
+module.exports = {
+  ciscoClientID: '',
+  ciscoClientSecret: '',
+  cookieKey: 'randomSecretKey',
+};
+```
+
+:::note
+It is possible to regenerate the client secret from the Integration page.
+:::
+
+We have stored the integration data and can now explain how the OAuth flow will work.
