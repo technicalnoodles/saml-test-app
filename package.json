@@ -11,6 +11,7 @@
     "build-client": "cd ./client && npm run build",
     "build-doc-app": "npm run build-docs && rm -Rf ./docs/ && cp -R ./DEVWKS-2122-DOCS/build/ ./docs",
     "setup-dependencies": "npm i && cd ./client && npm i && cd ..",
+    "seed-db": "node seed.js",
     "start": "concurrently --raw \"npm run client\" \"npm run server \""
   },
   "repository": {
@@ -24,6 +25,7 @@
   },
   "homepage": "https://github.com/galica9999/DEVWKS-2122#readme",
   "dependencies": {
+    "axios": "^1.2.6",
     "concurrently": "^7.6.0",
     "cookie-session": "^2.0.0",
     "express": "^4.18.2",
