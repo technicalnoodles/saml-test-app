@@ -129,7 +129,7 @@ Looking at the top route. We are expecting a `GET` request for `/auth/cisco`. Wh
 
 The second argument is the `scope` of what data we want to get back from the authentication request. In this case, it is the same `scope` we defined in the Webex Integration. This first request that is sent to WebEx will return a `code` like we saw in the OAuth flow, but no user data. The `code` is like a ticket.
 
-We will exchange this ticket for the user data in the callback. Here is an example of what is returned as a URL:  
+We will exchange this ticket for the user data in the callback. Here is an example of what is returned as a URL:
 `http://localhost:5000/auth/cisco/callback?code=YjJkNzdlOWItMTJ0000000000000000000000000000000000000_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f`
 
 The second route is the route we are using as the callback for the integration. This callback route will make another call back to WebEx, but it will pass the `code` from the previous request as an argument. Now that we have given the ticket back to WebEx, it will give us the user data we requested.
@@ -137,95 +137,3 @@ The second route is the route we are using as the callback for the integration. 
 The route `/api/logout` will be used to take care of logouts and it will tear down the session and invalidate the cookie at the same time.
 
 Finally, we need to an API to check if there is a user logged in. The `/api/current_user` route will provide this functionality. It is what our frontend will use to check if it can say someone is logged in or not as well.
-
-### Running the routes and service
-
-Open the `index.js` in VSCode.
-
-```javascript title=index.js showLineNumbers
-const express = require('express');
-const mongoose = require('mongoose');
-const cookieSession = require('cookie-session');
-const passport = require('passport');
-const keys = require('./config/keys');
-require('./models/User');
-require('./services/passport');
-require('./models/Event');
-
-const port = 5000;
-
-main().catch((err) => console.log(err));
-
-async function main() {
-  await mongoose.connect('mongodb://localhost:27017');
-  // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
-}
-
-const app = express();
-app.use(express.json());
-
-app.use(
-  cookieSession({
-    maxAge: 2 * 24 * 60 * 60 * 1000,
-    keys: [keys.cookieKey],
-  })
-);
-app.use(function (request, response, next) {
-  if (request.session && !request.session.regenerate) {
-    request.session.regenerate = (cb) => {
-      cb();
-    };
-  }
-  if (request.session && !request.session.save) {
-    request.session.save = (cb) => {
-      cb();
-    };
-  }
-  next();
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-require('./routes/authRoutes')(app);
-
-require('./routes/eventRoutes')(app);
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-```
-
-To test that our flow works, we can run `index.js`. Run the command `node index.js` and it will start the server. In a browser, go to `localhost:5000/auth/cisco`. It should take you to a login and ask for permission to give the app your info. After this, it will hang and never load a new page. Check the CLI and there should now be some json data. This is the profile we logged out in the Passport service. It should look like what is below:
-
-```json showLineNumber
-{
-    provider: 'cisco-spark',
-    id: 'Y2lzYOWE',
-    displayName: 'Ryan MacLennan',
-    emails: [ 'rymaclen@cisco.com' ],
-    avatar: 'https://63cd9a~9a06f454eaf94e439575028d59b2b171~1600',
-    created: '1900-06-21',
-    _json: {
-        id: 'Y2lzY22NkOWE',
-        emails: [ 'rymaclen@cisco.com' ],
-        phoneNumbers: [ [Object], [Object] ],
-        displayName: 'Ryan MacLennan',
-        nickName: 'Ryan',
-        firstName: 'Ryan',
-        lastName: 'MacLennan',
-        userName: 'rymaclen@cisco.com',
-        avatar: 'https://avatar-prod-us-east-2.webexcontent.com/06f454eaf94e439575028d59b2b171~1600',
-        orgId: 'OSVpBVElPTi8xZWI2NWZkZi05NjQ',
-        created: '1900-06-21',
-        lastModified: '2023-01-11T17:57:33.357Z',
-        lastActivity: '2023-01-17T23:04:20.927Z',
-        status: 'active',
-        type: 'person',
-        department: '0',
-        title: 'Technical Marketing Engineer',
-    }
-}
-```
-
-We have a working authentication flow and have finished the initial setup of Passport. We can now move on to adding the database.

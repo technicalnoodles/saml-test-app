@@ -11,7 +11,7 @@ module.exports = (app) => {
     }
   });
 
-  app.post('/api/event', requireLogin, async (req, res) => {
+  app.post('/api/event', async (req, res) => {
     const title = req.body.title;
     console.log(title);
     const response = await new Event({ title, active: true }).save();

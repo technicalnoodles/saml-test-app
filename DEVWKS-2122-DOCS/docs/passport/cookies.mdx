@@ -6,13 +6,7 @@ sidebar_position: 6
 
 ## Creating a Session Cookie
 
-To create a cookie for our users. We need to tell Passport to use a cookie and to do this we need to install a library called `cookie-session`.
-
-### Install cookie-session
-
-In the CLI run the below command to install `cookie-session`.
-
-`npm install cookie-session`
+To create a cookie for our users. We need to tell Passport to use a cookie and to do this we need the library called `cookie-session`.
 
 ### Create a Cookie Encryption Key
 
@@ -29,27 +23,7 @@ module.exports({
 
 ### Update Passport to Use a Cookie
 
-Now we need to update the `index.js` file. This will include importing the `cookieKey`, importing the required libraries, telling the application to create a cookie, and configuring Passport to use the cookie.
-
-We first need to import `cookie-session`, `passport`, and the `keys` file.
-
-```javascript title=index.js showLineNumbers
-const express = require('express');
-const mongoose = require('mongoose');
-//add-line
-const cookieSession = require('cookie-session');
-//add-line
-const passport = require('passport');
-//add-line
-const keys = require('./config/keys');
-require('./models/User');
-require('./services/passport');
-require('./models/Event');
-
-const port = 5000;
-```
-
-Now we can configure the application to use create a cookie. We will tell the `app` to use the `cookieSession` we imported. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
+Open the `index.js` in VSCode.
 
 ```javascript title=index.js showLineNumbers
 const express = require('express');
@@ -72,57 +46,77 @@ async function main() {
 
 const app = express();
 app.use(express.json());
-//add-line
+
 app.use(
-  //add-line
   cookieSession({
-    //add-line
     maxAge: 2 * 24 * 60 * 60 * 1000,
-    //add-line
     keys: [keys.cookieKey],
-    //add-line
   })
-  //add-line
 );
+
+app.use(function (request, response, next) {
+  if (request.session && !request.session.regenerate) {
+    request.session.regenerate = (cb) => {
+      cb();
+    };
+  }
+  if (request.session && !request.session.save) {
+    request.session.save = (cb) => {
+      cb();
+    };
+  }
+  next();
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+require('./routes/authRoutes')(app);
+
+require('./routes/eventRoutes')(app);
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
 ```
+
+In the code above we we import and tell the `app` to use the `cookieSession` library. `cookieSession` takes an object as an argument. The object has two properties in it: `maxAge` and `keys`. The `maxAge` property is the amount of time a cookie has before it expires in milliseconds. The `keys` property is a list of keys that can be used to encrypt the session cookie.
 
 Lastly we need to tell Passport to use the cookie in a session. This is done with only two additional lines. The `initialize` function tells passport to use the `serialize` and `deserialize` functions we defined earlier. The `session` function tells passport to use sessions after an authentication flow completes.
 
-```javascript title=index.js showLineNumbers
-const express = require('express');
-const mongoose = require('mongoose');
-const cookieSession = require('cookie-session');
-const passport = require('passport');
-const keys = require('./config/keys');
-require('./models/User');
-require('./services/passport');
-require('./models/Event');
-
-const port = 5000;
-
-main().catch((err) => console.log(err));
-
-async function main() {
-  await mongoose.connect('mongodb://localhost:27017');
-  // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
-}
-
-const app = express();
-app.use(express.json());
-
-app.use(
-  cookieSession({
-    maxAge: 2 * 24 * 60 * 60 * 1000,
-    keys: [keys.cookieKey],
-  })
-);
-//add-line
-app.use(passport.initialize());
-//add-line
-app.use(passport.session());
-```
-
 ### Testing
+
+To test that our flow works, we can run `index.js`. Run the command `node index.js` and it will start the server. In a browser, go to `localhost:5000/auth/cisco`. It should take you to a login and ask for permission to give the app your info. After this, it will hang and never load a new page. Check the CLI and there should now be some json data. This is the profile we logged out in the Passport service. It should look like what is below:
+
+```json showLineNumber
+{
+    provider: 'cisco-spark',
+    id: 'Y2lzYOWE',
+    displayName: 'Ryan MacLennan',
+    emails: [ 'rymaclen@cisco.com' ],
+    avatar: 'https://63cd9a~9a06f454eaf94e439575028d59b2b171~1600',
+    created: '1900-06-21',
+    _json: {
+        id: 'Y2lzY22NkOWE',
+        emails: [ 'rymaclen@cisco.com' ],
+        phoneNumbers: [ [Object], [Object] ],
+        displayName: 'Ryan MacLennan',
+        nickName: 'Ryan',
+        firstName: 'Ryan',
+        lastName: 'MacLennan',
+        userName: 'rymaclen@cisco.com',
+        avatar: 'https://avatar-prod-us-east-2.webexcontent.com/06f454eaf94e439575028d59b2b171~1600',
+        orgId: 'OSVpBVElPTi8xZWI2NWZkZi05NjQ',
+        created: '1900-06-21',
+        lastModified: '2023-01-11T17:57:33.357Z',
+        lastActivity: '2023-01-17T23:04:20.927Z',
+        status: 'active',
+        type: 'person',
+        department: '0',
+        title: 'Technical Marketing Engineer',
+    }
+}
+```
 
 We can try running the `index.js` file now. To do this run the below command:
 
