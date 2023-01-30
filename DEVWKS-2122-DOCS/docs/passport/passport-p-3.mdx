@@ -89,40 +89,4 @@ module.exports = (app) => {
 };
 ```
 
-Now let’s update the authentication routes.
-
-## Auth Routes Update
-
-We need to edit the `authRoutes` file back in the `routes` directory of the main project.
-
-We need to stop the ugly redirect from Cisco to `/auth/cisco/callback` and to redirect the `logout` back to the home page. To do this we need change the `res.send` to a `res.redirect`
-
-```javascript title=routes/authRoutes.js showLineNumbers
-const passport = require('passport');
-
-module.exports = (app) => {
-  app.get(
-    '/auth/cisco',
-    passport.authenticate('cisco-spark', { scope: ['spark:all'] })
-  );
-
-  app.get(
-    '/auth/cisco/callback',
-    passport.authenticate('cisco-spark'),
-    //add-line
-    (req, res) => res.redirect('http://localhost:3001/events')
-  );
-
-  app.get('/api/logout', (req, res) => {
-    req.logout();
-    //add-line
-    res.redirect('/');
-  });
-
-  app.get('/api/current_user', (req, res) => {
-    res.send(req.user);
-  });
-};
-```
-
-With all of this done. We have finished the workshop.
+Now lets update the authentication routes.

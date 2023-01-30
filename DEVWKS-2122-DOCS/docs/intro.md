@@ -33,16 +33,6 @@ Lastly is the file `index.js`. This file handles running all the application cod
 The `DEVWKS-2122-DOCS` and `docs` directories can be ignored since they contain the built and unbuilt documentation you are reading
 :::
 
-Let's start the client and server using the below command:
-
-```
-npm run start
-```
-
-Run this command in the CLI in the root of our project.
-
-This command runs both the client and server, and both will live reload while we edit throughout the lab. This makes it easier for us to continue developing without needing to start and stop the server as we code.
-
 Now we need to get a MongoDb running as a docker container. We are using MongoDb to store our user data and the events in this lab.
 
 ## MongoDb Docker Container
@@ -56,4 +46,23 @@ If the `docker run` command does not work, we need to pull down the image using 
 
 Then we may run the command from the previous step.
 
-Now that we are familiar with the file structure, and have the database running, we need to setup the Webex Integration that will be used for the authentication process.
+After our database has started, we need to fill our database with some example data. But first we need to start the client and server using the below command:
+
+```
+npm run start
+```
+
+Run this command in the CLI in the root of our project.
+
+This command runs both the client and server, and both will live reload while we edit throughout the lab. This makes it easier for us to continue developing without needing to start and stop the server as we code.
+
+The client and server should be running, but the webpage that came up will be blank. Let us fill the database using the below command:
+
+```javascript
+node seed.js
+```
+
+After this has finished, please refresh the page. It should look similar to what is below:
+![app-start](../static/img/app-start.png)
+
+Now the application is running and the database has some data, we need to setup the Webex Integration that will be used for the authentication process.
