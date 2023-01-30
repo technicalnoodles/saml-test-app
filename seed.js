@@ -12,7 +12,7 @@ axios.post(
 
 axios.post(
   'http://localhost:5000/api/event',
-  { title: '55 RDP sessions detected' },
+  { title: '24 SSH sessions from unknown origin' },
   {
     headers: {
       Accept: 'application/json',
