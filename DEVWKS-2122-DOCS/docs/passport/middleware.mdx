@@ -107,7 +107,7 @@ Lets create an _authorized users_ list to check if the user is authorized to acc
 
 ### Adding an Authorized User check
 
-We will create one more middle to make this possible. In the `middlewares` directory create a new file called `authorizedUser.js`. Then paste the below code into it:
+We will create one more middleware to make this possible. In the `middlewares` directory create a new file called `authorizedUser.js`. Then paste the below code into it:
 
 ```javascript title='middlewares/authorizedUser.js' showLineNumbers
 module.exports = (req, res, next) => {

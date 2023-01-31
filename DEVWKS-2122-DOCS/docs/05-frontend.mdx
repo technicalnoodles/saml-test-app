@@ -1,8 +1,8 @@
 ---
-sidebar_position: 7
+sidebar_position: 6
 ---
 
-# Front-end Part 1
+# Making the Frontend Reactive
 
 We need to make our React frontend be able to detect when a user is logged in and then allow them to access the Events in our application.
 
@@ -60,40 +60,25 @@ We need to create a directory and two files like we did for the actions. In the 
 `authReducer.js`  
 `index.js`
 
-In the `authReducer` file, we need to import the _type_ of _action_ we want to be able to use.
-
-```javascript title=reducers/authReducer.js showLineNumbers
-import { FETCH_USER } from '../actions/types';
-```
-
-Next we will define the function that will handle these actions.
-
-```javascript title=reducers/authReducer.js showLineNumbers
-import { FETCH_USER } from '../actions/types';
-//add-line
-export default function (state = null, action) {
-```
-
-For this function, we are passing two arguments to it. the first is the initial state of our application. In this case we are using `null`. The second is the `action`. This will be passed to the reducer when we use a `dispatch` function in the application. The body of the function will have a switch statement with the different types of state we can return based on the action type.
+Please paste this code into the `authReducer.js` file:
 
 ```javascript title=reducers/authReducer.js showLineNumbers
 import { FETCH_USER } from '../actions/types';
 export default function (state = null, action) {
-  //add-line
   switch (action.type) {
-    //add-line
     case FETCH_USER:
-      //add-line
       return action.payload || false;
-    //add-line
     default:
-      //add-line
       return state;
-    //add-line
   }
-  //add-line
 }
 ```
+
+In the `authReducer` file, we import the _type_ of _action_ we want to be able to use.
+
+Next we define the function that handles these actions.
+
+For this function, we are passing two arguments to it. The first is the initial state of our application. In this case we are using `null`. The second is the `action`. This will be passed to the reducer when we use a `dispatch` function in the application. The body of the function will have a switch statement with the different types of state we can return based on the action type.
 
 The first case is if we detect `FETCH_USER`, if the payload of the action is not empty we return the payload to the state of our application. Otherwise, we return `false`.
 
@@ -101,31 +86,25 @@ The `default` case will return the default state we set or whatever the current 
 
 The next thing we need to do is to combine our reducers so Redux is able to easily identify and use them.
 
-In the `index.js` file, we will first import a function called `combineReducers`. This allows to server multiple reducers to redux from a single entry point. Then we will import our `authReducer`.
+In the `index.js` file paste the below code:
 
 ```javascript title=reducers/index.js showLineNumbers
 import { combineReducers } from 'redux';
 import authReducer from './authReducer';
-```
-
-After the two imports, we need to export the `combineReducers` function with the `authReducer` set to `auth`. The reason for doing this is to give a simpler name to this state. We will now be able to access the `authReducer` state using the `auth` name instead. If we were to use a tool called `Redux DevTools`, we would be able to see a sate called `auth` in our application store.
-
-```javascript title=reducers/index.js showLineNumbers
-import { combineReducers } from 'redux';
-import authReducer from './authReducer';
-//add-line
 export default combineReducers({
-  //add-line
   auth: authReducer,
-  //add-line
 });
 ```
+
+We first import a function called `combineReducers`. This allows to server multiple reducers to redux from a single entry point. Then we will import our `authReducer`.
+
+After the two imports, we need to export the `combineReducers` function with the `authReducer` set to `auth`. The reason for doing this is to give a simpler name to this state as we access it throughout the frontend. We will now be able to access the `authReducer` state using the `auth` name instead. If we were to use a tool called `Redux DevTools`, we would be able to see a sate called `auth` in our application store.
 
 This is all we need to setup for the actions and reducers of Redux. We now need to configure the `store` and add functionality to allow asynchronous calls.
 
 ### Configuring the Store
 
-We need to import another library called `reduxThunk`. This library acts as a _middleware_ and allows asynchronous Redux actions to take place. The second thing we need to import is all our _reducers_. The `import reducers from './reducers'` works without specifying a file because Redux looks for a file called `index.js` in the `reducers` directory that should contain all the reducers.
+Delete everything in the `index.js` file and paste the below.
 
 ```javascript title=scr/index.js showLineNumbers
 import React from 'react';
@@ -139,6 +118,7 @@ import reduxThunk from 'redux-thunk';
 import reducers from './reducers';
 import './styles/cui-standard.min.css';
 
+//add-line
 const store = createStore(reducers, {}, applyMiddleware(reduxThunk));
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -150,39 +130,18 @@ root.render(
   </React.StrictMode>
 );
 ```
+
+We need to import another library called `reduxThunk`. This library is a _middleware_ and allows asynchronous Redux actions to take place. The second thing we need to import are the _reducers_. The `import reducers from './reducers'` works without specifying a file because Redux looks for a file called `index.js` in the `reducers` directory that should contain all the reducers.
 
 Next we need to edit our `store`. Initially there was a function that returned an empty object. This became the initial state for the entire `store`. Now we are passing `reducers` to it, which is going to set the store default state to what is defined in the reducers.
 
 Lastly we added `reduxThunk` as a middleware. In the `actions/index.js` we use an async function. Now it will work properly and be able to set the state.
 
-```javascript title=scr/index.js showLineNumbers
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
-import reduxThunk from 'redux-thunk';
-import reducers from './reducers';
-import './styles/cui-standard.min.css';
-
-//remove-line
-const store = createStore(() => {}, {}, applyMiddleware());
-//add-line
-const store = createStore(reducers, {}, applyMiddleware(reduxThunk));
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </React.StrictMode>
-);
-```
-
 Now the application is configured to use Redux.
 
 We now need to get some running through the React application. We will import some functions we need and initiate the check for if the user is logged in.
+
+Delete everything in the `App.js` file and paste in the below code:
 
 ```javascript title=src/App.js showLineNumbers
 //add-line
@@ -225,153 +184,47 @@ After that we need to initialize the `useDispatch`. This will allow us to call t
 
 `useEffect` allows us to make an asynchronous call in our code and then update some state. We use `useEffect` because it will render any components that need to be updated after it has finished. In this `useEffect`, we are calling the `dispatch` function with the `fetchUser` action. This will activate the Redux action and reducer, causing a call to our backend to fetch the user. Since the `App.js` is one of the first files loaded in a React project, it makes sense to fetch the user here.
 
-We will come back to the `App.js` file in a little bit so we can refactor the returned code to use the Router. But first we will edit eh `Header.js` component to change the login and logout button after checking the user.
+We will come back to the `App.js` file in a little bit so we can refactor the returned code to use the Router. But first we will edit the `Header.js` component to change the login and logout button after checking the user.
 
 ### Login/Logout of Header
 
 We need to add some logic and refactor the header code to change the functionality of the Login and Logout button. First let's import the functions we need from Redux.
 
-We are importing `useSelector` from Redux. This function allows us to access the state of the Redux store from anywhere without needing to do something called prop-drilling. Prop-drilling introduces a multitude of dependency issues in an application and can cause significant issues as a project gets larger.
+Delete everything in the `Header.js` file in the `scr/components` directory and paste in the below code:
 
-The second thing we are importing is a `Link` from the React Router. This will tell React which page to show when it is selected.
-
-```javascript title=components/Header.js showLineNumbers
-//add-line
-import { useSelector } from 'react-redux';
-//add-line
-import { Link } from 'react-router-dom';
-const Header = () => {
-  return (
-    <header className="header">
-      <div className="container">
-        <div className="header-panels">
-          <div className="header-panel">
-            <a className="header__logo" href="http://www.cisco.com">
-              <span className="icon-cisco"></span>
-            </a>
-            <div className="header__title">DEVWKS-2122</div>
-          </div>
-          <div className="header-panel header-panel--center">
-            <div className="header-item">
-              <ul id="tabsheader" className="tabs">
-                <li id="tabsheader-1" className="tab active">
-                  <a tabindex="0">
-                    <div className="tab__heading">Active Events</div>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="header-panel header-panel--right">
-            <a className="header-item" href="/login">
-              <span className="half-margin-right">Log In</span>
-              <span className="icon-sign-in icon-size-20"></span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-export default Header;
-```
-
-Next is to access the _auth_ state with the `useSelector`. The _state_ that is used in the selector is the Redux store and we are accessing just the _auth_ state in the store. Then we store it as the `loggedIn` variable.
-
-```javascript title=components/Header.js showLineNumbers
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-const Header = () => {
-  //add-line
-  const loggedIn = useSelector((state) => state.auth);
-
-  return (
-    <header className="header">
-    <!-- left out or ease of reading -->
-    </header>
-  );
-};
-
-export default Header;
-```
-
-We will create a _switch_ statement next. This statement will be used to render a different piece of HTML depending on the value of the `loggedIn` variable.
-
-We have created three cases, one for `null`, `false`, and `default` (for `true`). The `null` and `false` both link to `/auth/cisco` and have the top right say **Login**. The `default` case returns a link with `Logout` linking to `/api/logout` meaning the user is logged in.
-
-```javascript title=components/Header.js showLineNumbers
+```javascript title=components/Header.js
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 const Header = () => {
   const loggedIn = useSelector((state) => state.auth);
-  //add-line
   const renderLogin = () => {
-    //add-line
-  switch (loggedIn) {
-    //add-line
-    case null:
-        //add-line
+    switch (loggedIn) {
+      case null:
         return (
-            //add-line
-            <a className="header-item" href="/auth/cisco">
-            //add-line
+          <a className="header-item" href="/auth/cisco">
             <span className="half-margin-right">Login</span>
-            //add-line
             <span className="icon-sign-in icon-size-20"></span>
-            //add-line
-            </a>
-            //add-line
+          </a>
         );
-        //add-line
-    case false:
-        //add-line
+      case false:
         return (
-            //add-line
-            <a className="header-item" href="/auth/cisco">
-            //add-line
+          <a className="header-item" href="/auth/cisco">
             <span className="half-margin-right">Login</span>
-            //add-line
             <span className="icon-sign-in icon-size-20"></span>
-            //add-line
-            </a>
-            //add-line
+          </a>
         );
-        //add-line
-    default:
-        //add-line
+      default:
         return (
-            //add-line
-            <a className="header-item" href="/api/logout">
-            //add-line
+          <a className="header-item" href="/api/logout">
             <span className="half-margin-right">Logout</span>
-            //add-line
             <span className="icon-sign-in icon-size-20"></span>
-            //add-line
-            </a>
-            //add-line
+          </a>
         );
-        //add-line
     }
-    //add-line
   };
 
   return (
     <header className="header">
-        <!-- left out or ease of reading -->
-    </header>
-  );
-};
-
-export default Header;
-```
-
-Now that our logic is setup, we need to edit the header to use the new logic. In the `Header` function of our component, we will remove the `login` a tag and replace it with the `renderLogin` function. We need to wrap it in curly braces, so it does not get treated as HTML.
-
-```javascript title=components/Header.js
-const Header = () => {
-  return (
-    <header className="header">
       <div className="container">
         <div className="header-panels">
           <div className="header-panel">
@@ -383,64 +236,12 @@ const Header = () => {
           <div className="header-panel header-panel--center">
             <div className="header-item">
               <ul id="tabsheader" className="tabs">
-                <li id="tabsheader-1" className="tab active">
-                  <a tabindex="0">
-                    <div className="tab__heading">Active Events</div>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="header-panel header-panel--right">
-            //remove-line
-            <a className="header-item" href="/login">
-              //remove-line
-              <span className="half-margin-right">Log In</span>
-              //remove-line
-              <span className="icon-sign-in icon-size-20"></span>
-              //remove-line
-            </a>
-            //add-line
-            {renderLogin()}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-```
-
-After this we need to add some logic to the _Active Events_ tab. We do not want it to render if the user is not logged in. We will also make this **a** tag into a `Link` so React can navigate with it.
-
-```javascript title=components/Header.js
-const Header = () => {
-  return (
-    <header className="header">
-      <div className="container">
-        <div className="header-panels">
-          <div className="header-panel">
-            <a className="header__logo" href="http://www.cisco.com">
-              <span className="icon-cisco"></span>
-            </a>
-            <div className="header__title">DEVWKS-2122</div>
-          </div>
-          <div className="header-panel header-panel--center">
-            <div className="header-item">
-              <ul id="tabsheader" className="tabs">
-                //add-line
                 {loggedIn && (
                   <li id="tabsheader-1" className="tab active">
-                    //remove-line
-                    <a tabindex="0">
-                    //add-line
                     <Link to={'/events'}>
                       <div className="tab__heading">Active Events</div>
-                      //remove-line
-                    </a>
-                    //add-line
                     </Link>
                   </li>
-                  //add-line
                 )}
               </ul>
             </div>
@@ -457,11 +258,29 @@ const Header = () => {
     </header>
   );
 };
+
+export default Header;
 ```
+
+We first import `useSelector` from Redux. This function allows us to access the state of the Redux store from anywhere without needing to do something called prop-drilling. Prop-drilling introduces a multitude of dependency issues in an application and can cause significant issues as a project gets larger.
+
+We import `Link` second from the React Router. This will tell React which page to show when it is selected.
+
+Next is to access the _auth_ state with the `useSelector`. The _state_ that is used in the selector is the Redux store and we are accessing just the _auth_ state in the store. Then we store it as the `loggedIn` variable.
+
+We will create a _switch_ statement next. This statement will be used to render a different piece of HTML depending on the value of the `loggedIn` variable.
+
+We have created three cases, one for `null`, `false`, and `default` (for `true`). The `null` and `false` both link to `/auth/cisco` and have the top right say **Login**. The `default` case returns a link with `Logout` linking to `/api/logout` meaning the user is logged in.
+
+Now that our logic is setup, we need to edit the header to use the new logic. In the `Header` function of our component, we will remove the `login` a tag and replace it with the `renderLogin` function. We need to wrap it in curly braces, so it does not get treated as HTML.
+
+After this we need to add some logic to the _Active Events_ tab. We do not want it to render if the user is not logged in. We will also make this **a** tag into a `Link` so React can navigate with it.
 
 That is all we need to do in the Header. If we login and logout of the application, we should see the text change between 'login' and 'logout' and the 'Active Events' tab will toggle as well.
 
-Back in the `App.js`, we need to refactor the code to use the React Router and specify the routes for specific components. First we need to import the `Login` page from `pages/Login.js`
+Back in the `App.js`, we need to refactor the code to use the React Router and specify the routes for specific components.
+
+Remove the code in the `App.js` file and paste in the below:
 
 ```javascript title=src/App.js
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -512,4 +331,4 @@ We can replace the entire _return_ in the `App.js` file with the above code. Thi
 
 Now for the main component of the application. For any components we want to be able to access using a route, we need to put it in the `Routes` wrapper. Then create a new `Route` component with the path of the component and what component or element it will render.
 
-There are a few things left to do but those will be back in the backend server code. We need to update our `authRoutes` and add some middleware.
+Now we have a fully functioning full-stack application with WebEx OAuth and permission checking.
