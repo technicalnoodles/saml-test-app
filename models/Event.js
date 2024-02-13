@@ -7,7 +7,3 @@ const eventSchema = new Schema({
 });
 
 const event = mongoose.model('event', eventSchema);
-<<<<<<< HEAD
-
-=======
->>>>>>> main
