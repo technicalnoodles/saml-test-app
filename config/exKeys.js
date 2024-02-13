@@ -1,4 +1,5 @@
-module.exports({
-    ciscoClientID:'',
-    ciscoClientSecret:''
-})
+module.exports = {
+  ciscoClientID: '',
+  ciscoClientSecret: '',
+  cookieKey:'',
+};
